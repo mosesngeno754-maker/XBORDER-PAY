@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xborder Pay — Send money like it's local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1F17;
+    --pine:#123324;
+    --pine-2:#173d2c;
+    --paper:#EEF3EA;
+    --paper-2:#E2EAE0;
+    --emerald:#1B6B4A;
+    --emerald-2:#155238;
+    --sprout:#8FD14F;
+    --gold:#C9A227;
+    --ash:#5C6F63;
+    --mist:#B9C7BC;
+    --white:#FBFCF9;
+    --danger:#C1523B;
+    --radius:14px;
+    --radius-sm:8px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--sprout);color:var(--ink);}
+  :focus-visible{outline:2px solid var(--emerald);outline-offset:2px;}
+  [dir="rtl"] .otp-boxes{direction:ltr;}
+  [dir="rtl"] .mono{direction:ltr;unicode-bidi:embed;}
+
+  /* ---------- Ticker ---------- */
+  .ticker-bar{
+    background:var(--ink);
+    color:var(--mist);
+    overflow:hidden;
+    white-space:nowrap;
+    border-bottom:1px solid var(--pine-2);
+  }
+  .ticker-track{
+    display:inline-flex;
+    padding:8px 0;
+    animation:scroll-left 32s linear infinite;
+  }
+  .ticker-item{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:0 22px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-right:1px solid var(--pine-2);
+  }
+  .ticker-item .pair{color:var(--white);font-weight:600;}
+  .ticker-item .up{color:var(--sprout);}
+  .ticker-item .down{color:#E08B76;}
+  @keyframes scroll-left{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+
+  /* ---------- Nav ---------- */
+  nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 40px;
+    max-width:1240px;
+    margin:0 auto;
+    gap:16px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .logo-mark{
+    width:30px;height:30px;
+    border-radius:50%;
+    background:conic-gradient(from 45deg,var(--emerald),var(--sprout),var(--gold),var(--emerald));
+    position:relative;
+    flex-shrink:0;
+  }
+  .logo-mark::after{
+    content:"";
+    position:absolute;inset:6px;
+    border-radius:50%;
+    background:var(--paper);
+  }
+  .nav-links{display:flex;gap:32px;font-size:14px;font-weight:500;color:var(--ash);}
+  .nav-links a{text-decoration:none;transition:color .15s;white-space:nowrap;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .lang-select{
+    border:1px solid var(--paper-2);background:var(--white);border-radius:8px;
+    padding:9px 10px;font-size:13px;font-family:inherit;color:var(--ink);
+  }
+  .btn{
+    border:none;
+    border-radius:999px;
+    padding:11px 22px;
+    font-size:14px;
+    font-weight:600;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--ink);color:var(--white);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(11,31,23,0.25);}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--paper-2);}
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-block{width:100%;justify-content:center;padding:14px;font-size:15px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none !important;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    max-width:1240px;
+    margin:0 auto;
+    padding:60px 40px 100px;
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:60px;
+    align-items:center;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--emerald-2);
+    background:rgba(27,107,74,0.1);
+    padding:6px 12px;border-radius:999px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sprout);flex-shrink:0;}
+  .hero h1{
+    font-size:clamp(38px,5vw,58px);
+    line-height:1.04;
+    margin-bottom:22px;
+  }
+  .hero h1 em{font-style:italic;color:var(--emerald);}
+  .hero p.lede{
+    font-size:18px;color:var(--ash);line-height:1.6;max-width:480px;margin-bottom:32px;
+  }
+  .hero-ctas{display:flex;gap:14px;margin-bottom:36px;flex-wrap:wrap;}
+  .trust-row{display:flex;gap:22px;font-size:13px;color:var(--ash);flex-wrap:wrap;}
+  .trust-row span{display:flex;align-items:center;gap:6px;}
+
+  /* Converter card */
+  .converter{
+    background:var(--ink);
+    border-radius:22px;
+    padding:28px;
+    color:var(--white);
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(11,31,23,0.45);
+  }
+  .converter::before{
+    content:"";
+    position:absolute;top:-60px;right:-60px;
+    width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(143,209,79,0.25),transparent 70%);
+  }
+  .converter-label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mist);margin-bottom:18px;}
+  .conv-row{
+    background:var(--pine);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;
+    border:1px solid var(--pine-2);
+  }
+  .conv-row input{
+    background:transparent;border:none;color:var(--white);
+    font-family:'IBM Plex Mono',monospace;font-size:22px;width:60%;
+  }
+  .conv-row input:focus{outline:none;}
+  .conv-row select{
+    background:var(--pine-2);color:var(--white);border:none;border-radius:8px;
+    padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
+  }
+  .conv-swap{
+    display:flex;justify-content:center;margin:-6px 0;position:relative;z-index:1;
+  }
+  .conv-swap button{
+    width:34px;height:34px;border-radius:50%;background:var(--sprout);border:4px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink);
+  }
+  .conv-rate{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mist);
+    margin:16px 0 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .conv-rate .fee{color:var(--sprout);}
+  .lock-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);
+    background:rgba(201,162,39,0.14);padding:5px 11px;border-radius:999px;
+    margin-bottom:16px;
+  }
+
+  /* ---------- Sections ---------- */
+  section{max-width:1240px;margin:0 auto;padding:70px 40px;}
+  .section-head{max-width:600px;margin-bottom:48px;}
+  .section-head .eyebrow{margin-bottom:16px;}
+  .section-head h2{font-size:clamp(28px,3.4vw,38px);line-height:1.12;margin-bottom:14px;}
+  .section-head p{color:var(--ash);font-size:16px;line-height:1.6;}
+
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+  .step-card{
+    background:var(--white);border:1px solid var(--paper-2);border-radius:var(--radius);
+    padding:26px 22px;position:relative;
+  }
+  .step-stamp{
+    width:40px;height:40px;border-radius:50%;
+    border:2px dashed var(--emerald);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--emerald);
+    margin-bottom:18px;
+  }
+  .step-card h3{font-size:17px;margin-bottom:8px;}
+  .step-card p{font-size:14px;color:var(--ash);line-height:1.55;margin:0;}
+
+  .security-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .sec-card{
+    background:var(--ink);color:var(--white);
+    border-radius:18px;padding:28px;
+  }
+  .sec-card.alt{background:var(--white);color:var(--ink);border:1px solid var(--paper-2);}
+  .sec-card h3{font-size:18px;margin-bottom:10px;}
+  .sec-card p{font-size:14px;line-height:1.6;color:var(--mist);margin:0;}
+  .sec-card.alt p{color:var(--ash);}
+
+  .currency-grid{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:14px;
+  }
+  .curr-chip{
+    background:var(--white);border:1px solid var(--paper-2);border-radius:12px;
+    padding:16px 10px;text-align:center;
+  }
+  .curr-chip .code{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;}
+  .curr-chip .country{font-size:11px;color:var(--ash);margin-top:4px;}
+
+  /* Compliance badges */
+  .compliance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .badge-card{background:var(--white);border:1px solid var(--paper-2);border-radius:16px;padding:22px;}
+  .badge-icon{width:38px;height:38px;border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px;}
+  .badge-card h3{font-size:15px;margin-bottom:8px;}
+  .badge-card p{font-size:13px;color:var(--ash);line-height:1.55;margin:0;}
+  .compliance-note{
+    margin-top:26px;font-size:12px;color:var(--ash);background:var(--white);border:1px dashed var(--paper-2);
+    border-radius:12px;padding:16px 18px;line-height:1.6;
+  }
+
+  footer{
+    background:var(--ink);color:var(--mist);padding:50px 40px 30px;
+  }
+  .footer-inner{max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:30px;}
+  .footer-inner .logo{color:var(--white);}
+  footer .fine{font-size:12px;color:#5f7568;max-width:520px;line-height:1.6;margin-top:14px;}
+  .foot-links{display:flex;gap:40px;flex-wrap:wrap;}
+  .foot-links div{display:flex;flex-direction:column;gap:10px;font-size:13px;}
+  .foot-links strong{color:var(--white);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+
+  /* ================= APP SHELL ================= */
+  #app{display:none;min-height:100vh;background:var(--paper);}
+  .app-shell{
+    max-width:460px;margin:0 auto;padding:40px 24px 60px;min-height:100vh;
+  }
+  .app-topbar{
+    max-width:1240px;margin:0 auto;padding:20px 40px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ash);text-decoration:none;
+    background:none;border:none;font-weight:600;
+  }
+  .card-panel{
+    background:var(--white);border:1px solid var(--paper-2);border-radius:20px;
+    padding:34px 30px;box-shadow:0 20px 50px -30px rgba(11,31,23,0.3);
+  }
+  .panel-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--emerald);margin-bottom:10px;}
+  .panel-title{font-size:26px;margin-bottom:8px;}
+  .panel-sub{font-size:14px;color:var(--ash);line-height:1.55;margin-bottom:26px;}
+
+  .tab-switch{display:flex;background:var(--paper);border-radius:10px;padding:4px;margin-bottom:22px;}
+  .tab-switch button{
+    flex:1;border:none;background:transparent;padding:9px 6px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ash);
+  }
+  .tab-switch button.active{background:var(--white);color:var(--ink);box-shadow:0 2px 6px rgba(11,31,23,0.08);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ash);margin-bottom:6px;}
+  .field input, .field select{
+    width:100%;padding:13px 14px;border:1px solid var(--paper-2);border-radius:10px;
+    font-size:15px;background:var(--paper);color:var(--ink);font-family:inherit;
+  }
+  .field input:focus, .field select:focus{outline:none;border-color:var(--emerald);background:var(--white);}
+  .field-hint{font-size:12px;color:var(--ash);margin-top:6px;}
+  .field-error{font-size:12px;color:var(--danger);margin-top:6px;display:none;}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .demo-banner{
+    background:rgba(201,162,39,0.12);border:1px dashed var(--gold);border-radius:10px;
+    padding:12px 14px;font-size:13px;color:#8a6c14;margin-bottom:20px;line-height:1.5;
+  }
+  .demo-banner strong{font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;}
+
+  .otp-boxes{display:flex;gap:10px;margin-bottom:8px;}
+  .otp-boxes input{
+    width:100%;aspect-ratio:1;text-align:center;font-size:22px;font-family:'IBM Plex Mono',monospace;
+    border:1px solid var(--paper-2);border-radius:10px;background:var(--paper);
+  }
+  .otp-boxes input:focus{outline:none;border-color:var(--emerald);background:var(--white);}
+  .otp-boxes.shake{animation:shake .4s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px);}
+    40%{transform:translateX(8px);}
+    60%{transform:translateX(-6px);}
+    80%{transform:translateX(6px);}
+  }
+  .resend{font-size:13px;color:var(--ash);text-align:center;margin-top:16px;}
+  .resend button{background:none;border:none;color:var(--emerald);font-weight:600;padding:0;}
+  .otp-timer{font-size:12px;color:var(--ash);text-align:center;margin-top:10px;}
+  .otp-boxes input:disabled{opacity:.5;}
+
+  .session-item{padding:12px 0;border-bottom:1px solid var(--paper);}
+  .session-item:last-child{border-bottom:none;}
+  .session-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .session-device{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .session-meta{font-size:12px;color:var(--ash);margin-top:2px;}
+  .session-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:rgba(27,107,74,0.12);color:var(--emerald-2);}
+  .session-tag.flag{background:rgba(193,82,59,0.12);color:var(--danger);}
+  .session-actions{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;}
+  .session-actions button{background:none;border:none;padding:0;font-size:12px;font-weight:600;color:var(--emerald);}
+  .session-actions button.danger{color:var(--danger);}
+
+  .order-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+  .order-pill.escrow{background:rgba(201,162,39,0.14);color:#8a6c14;}
+  .order-pill.disputed{background:rgba(193,82,59,0.12);color:var(--danger);}
+  .order-pill.refunded{background:rgba(27,107,74,0.12);color:var(--emerald-2);}
+  .order-pill.released{background:var(--paper);color:var(--ash);}
+
+  .skip-link{display:block;text-align:center;font-size:13px;color:var(--ash);margin-top:16px;text-decoration:none;cursor:pointer;}
+
+  /* KYC */
+  .kyc-dropzone{
+    display:block;border:2px dashed var(--paper-2);border-radius:12px;padding:20px;text-align:center;
+    font-size:13px;color:var(--ash);cursor:pointer;transition:.15s;background:var(--paper);
+  }
+  .kyc-dropzone:hover{border-color:var(--emerald);}
+  .kyc-dropzone.filled{border-color:var(--emerald);background:rgba(27,107,74,0.06);color:var(--emerald-2);font-weight:600;}
+  .kyc-status{
+    display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;
+    background:var(--paper);margin-bottom:20px;font-size:13px;font-weight:600;
+  }
+  .kyc-dot{width:9px;height:9px;border-radius:50%;background:var(--ash);flex-shrink:0;}
+  .kyc-status.pending .kyc-dot{background:var(--gold);animation:pulseDot 1s infinite;}
+  .kyc-status.verified{background:rgba(27,107,74,0.1);color:var(--emerald-2);}
+  .kyc-status.verified .kyc-dot{background:var(--emerald);}
+  @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* Dashboard */
+  .dash-shell{max-width:960px;margin:0 auto;padding:0 40px 60px;}
+  .dash-header{display:flex;justify-content:space-between;align-items:center;padding:24px 0;}
+  .avatar-pill{display:flex;align-items:center;gap:10px;}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--emerald);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Fraunces',serif;}
+  .balance-hero{
+    background:var(--ink);border-radius:22px;padding:32px;color:var(--white);margin-bottom:24px;
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;
+  }
+  .balance-hero .amount{font-family:'IBM Plex Mono',monospace;font-size:38px;font-weight:600;}
+  .balance-hero .label{font-size:12px;color:var(--mist);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+  .wallet-strip{display:flex;gap:10px;flex-wrap:wrap;}
+  .wallet-chip{background:var(--pine);border-radius:10px;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mist);}
+
+  .dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;}
+  .dash-card{background:var(--white);border:1px solid var(--paper-2);border-radius:18px;padding:24px;margin-bottom:20px;}
+  .dash-card h3{font-size:16px;margin-bottom:16px;}
+  .tx-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--paper);}
+  .tx-item:last-child{border-bottom:none;}
+  .tx-name{font-size:14px;font-weight:600;}
+  .tx-meta{font-size:12px;color:var(--ash);}
+  .tx-item.flagged .tx-meta{color:#8a6c14;}
+  .tx-amt{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;}
+  .tx-amt.neg{color:var(--danger);}
+  .tx-amt.pos{color:var(--emerald);}
+
+  .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--paper);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row div span{display:block;}
+  .toggle-row .t-title{font-size:14px;font-weight:600;}
+  .toggle-row .t-sub{font-size:12px;color:var(--ash);margin-top:2px;}
+  .switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch-track{position:absolute;inset:0;background:var(--paper-2);border-radius:999px;transition:.2s;cursor:pointer;}
+  .switch-track::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--white);border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+  .switch input:checked + .switch-track{background:var(--emerald);}
+  .switch input:checked + .switch-track::before{transform:translateX(18px);}
+
+  .card-mini{
+    background:linear-gradient(135deg,var(--pine),var(--ink));color:var(--white);border-radius:14px;
+    padding:18px;margin-bottom:12px;position:relative;overflow:hidden;
+  }
+  .card-mini .num{font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;font-size:14px;margin:14px 0 10px;}
+  .card-mini .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--mist);}
+  .remove-card{background:none;border:none;color:var(--mist);font-size:11px;text-decoration:underline;position:absolute;top:16px;right:16px;}
+
+  /* Risk & compliance card */
+  .risk-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:10px;}
+  .risk-row .val{font-weight:600;}
+  .kyc-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;}
+  .kyc-pill.unverified{background:rgba(193,82,59,0.12);color:var(--danger);}
+  .kyc-pill.pending{background:rgba(201,162,39,0.14);color:#8a6c14;}
+  .kyc-pill.verified{background:rgba(27,107,74,0.12);color:var(--emerald-2);}
+  .limit-bar-track{height:8px;background:var(--paper);border-radius:999px;overflow:hidden;margin-top:6px;}
+  .limit-bar-fill{height:100%;background:var(--emerald);transition:width .3s;}
+  .verify-link{font-size:12px;color:var(--emerald);font-weight:600;text-decoration:underline;cursor:pointer;}
+
+  /* Payout tabs */
+  .payout-tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .payout-tabs button{
+    flex:1;border:1px solid var(--paper-2);background:var(--paper);padding:10px 6px;border-radius:10px;
+    font-size:12px;font-weight:600;color:var(--ash);
+  }
+  .payout-tabs button.active{border-color:var(--emerald);background:rgba(27,107,74,0.08);color:var(--emerald-2);}
+
+  /* Login view */
+  .bio-prompt{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    background:rgba(27,107,74,0.08);border:1px solid rgba(27,107,74,0.25);border-radius:16px;
+    padding:16px 20px;margin-bottom:20px;
+  }
+  .bio-prompt strong{display:block;font-size:14px;margin-bottom:3px;}
+  .bio-prompt span{font-size:12px;color:var(--ash);}
+  .login-bio-btn{
+    width:100%;padding:18px;border-radius:14px;border:1.5px solid var(--emerald);background:rgba(27,107,74,0.06);
+    display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:22px;
+  }
+  .login-bio-btn .icon{font-size:26px;}
+  .login-bio-btn strong{font-size:14px;color:var(--emerald-2);}
+  .login-bio-btn span.sub{font-size:12px;color:var(--ash);}
+  .divider{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ash);margin:20px 0;}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--paper-2);}
+
+  /* Biometric overlay */
+  .biometric-overlay{
+    position:fixed;inset:0;background:rgba(11,31,23,0.94);display:none;align-items:center;justify-content:center;
+    flex-direction:column;color:var(--white);z-index:300;text-align:center;padding:24px;
+  }
+  .biometric-overlay.show{display:flex;}
+  .pulse-ring{
+    width:84px;height:84px;border-radius:50%;border:3px solid var(--sprout);
+    display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:22px;
+    animation:pulseRing 1.1s infinite;
+  }
+  @keyframes pulseRing{
+    0%{box-shadow:0 0 0 0 rgba(143,209,79,0.5);}
+    70%{box-shadow:0 0 0 18px rgba(143,209,79,0);}
+    100%{box-shadow:0 0 0 0 rgba(143,209,79,0);}
+  }
+  .biometric-overlay h3{font-size:18px;margin-bottom:6px;}
+  .biometric-overlay p{font-size:13px;color:var(--mist);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--white);padding:14px 22px;border-radius:12px;font-size:14px;
+    display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:.25s;z-index:200;
+    box-shadow:0 20px 40px -10px rgba(0,0,0,0.4);max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast .dot{width:8px;height:8px;border-radius:50%;background:var(--sprout);flex-shrink:0;}
+
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;padding:40px 24px 60px;}
+    nav{padding:18px 24px;flex-wrap:wrap;}
+    .nav-links{display:none;}
+    .steps{grid-template-columns:1fr 1fr;}
+    .currency-grid{grid-template-columns:repeat(3,1fr);}
+    .compliance-grid{grid-template-columns:1fr 1fr;}
+    .security-grid{grid-template-columns:1fr;}
+    section{padding:50px 24px;}
+    .dash-grid{grid-template-columns:1fr;}
+    .footer-inner{flex-direction:column;}
+    .app-topbar{padding:18px 24px 0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ MARKETING SITE ============ -->
+<div id="site">
+  <div class="ticker-bar">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+
+  <nav>
+    <div class="logo"><span class="logo-mark"></span>Xborder Pay</div>
+    <div class="nav-links">
+      <a href="#how" data-i18n="navHow">How it works</a>
+      <a href="#security" data-i18n="navSecurity">Security</a>
+      <a href="#compliance" data-i18n="navCompliance">Compliance</a>
+      <a href="#currencies" data-i18n="navCurrencies">Currencies</a>
+    </div>
+    <div class="nav-right">
+      <select class="lang-select" id="langSelect" onchange="applyLanguage(this.value)" aria-label="Language">
+        <option value="en">🌐 English</option>
+        <option value="fr">🌐 Français</option>
+        <option value="sw">🌐 Kiswahili</option>
+        <option value="es">🌐 Español</option>
+        <option value="ar">🌐 العربية</option>
+      </select>
+      <button class="btn btn-ghost" data-i18n="navLogin" onclick="goToApp('login')">Log in</button>
+      <button class="btn btn-primary" data-i18n="navGetStarted" onclick="goToApp('register')">Get started →</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow" data-i18n="heroEyebrow">Cross-border transfers, same-day</div>
+      <h1 data-i18n="heroTitle">Send money like it's <em>local</em>, wherever it's going.</h1>
+      <p class="lede" data-i18n="heroLede">Xborder Pay lets anyone hold, convert, and send money across borders in the currency they already think in — verified by OTP, protected on every transfer.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary" data-i18n="heroCta1" onclick="goToApp('register')">Create free account →</button>
+        <button class="btn btn-ghost" data-i18n="heroCta2" onclick="document.getElementById('how').scrollIntoView()">See how it works</button>
+      </div>
+      <div class="trust-row">
+        <span data-i18n="trust1">🔒 OTP + biometric login</span>
+        <span data-i18n="trust2">🪪 Identity-verified accounts</span>
+        <span data-i18n="trust3">🌍 40+ currencies</span>
+      </div>
+    </div>
+
+    <div class="converter">
+      <div class="converter-label" data-i18n="convLabel">Live converter (demo rates)</div>
+      <div class="conv-row">
+        <input type="number" id="fromAmt" value="100" oninput="convert('from')">
+        <select id="fromCur" onchange="convert('from')">
+          <option value="USD">🇺🇸 USD</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="GBP">🇬🇧 GBP</option>
+          <option value="KES">🇰🇪 KES</option>
+          <option value="NGN">🇳🇬 NGN</option>
+          <option value="INR">🇮🇳 INR</option>
+        </select>
+      </div>
+      <div class="conv-swap"><button onclick="swapCur()" title="Swap currencies">⇅</button></div>
+      <div class="conv-row">
+        <input type="number" id="toAmt" value="0" oninput="convert('to')">
+        <select id="toCur" onchange="convert('from')">
+          <option value="KES" selected>🇰🇪 KES</option>
+          <option value="USD">🇺🇸 USD</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="GBP">🇬🇧 GBP</option>
+          <option value="NGN">🇳🇬 NGN</option>
+          <option value="INR">🇮🇳 INR</option>
+        </select>
+      </div>
+      <div class="conv-rate">
+        <span id="rateLabel">1 USD = 129.40 KES</span>
+        <span class="fee">Fee: 0.8%</span>
+      </div>
+      <div class="lock-chip" id="heroLockChip">🔒 Rate locked 1:00</div>
+      <button class="btn btn-primary btn-block" data-i18n="convSend" onclick="goToApp('register')">Send this amount →</button>
+    </div>
+  </div>
+
+  <section id="how">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="howEyebrow">Getting started</div>
+      <h2 data-i18n="howTitle">Four steps between you and your first transfer.</h2>
+      <p data-i18n="howLede">Every account is verified before it can move money — that's what keeps the network safe for everyone sending through it.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-stamp">1</div>
+        <h3>Register</h3>
+        <p>Sign up with just a mobile number or email — no branch visit to start.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-stamp">2</div>
+        <h3>Verify by OTP</h3>
+        <p>A one-time code confirms it's really you, on your registered contact only.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-stamp">3</div>
+        <h3>Confirm identity</h3>
+        <p>A quick ID check unlocks higher sending limits and stronger fraud protection.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-stamp">4</div>
+        <h3>Send anywhere</h3>
+        <p>To a wallet, a bank account, or mobile money — recipient gets their own currency.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="security">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="secEyebrow">Built to be trusted</div>
+      <h2 data-i18n="secTitle">Every transfer is watched, every login is checked.</h2>
+    </div>
+    <div class="security-grid">
+      <div class="sec-card">
+        <h3>OTP + biometric login</h3>
+        <p>A fresh one-time code is pushed to your registered number or email for new devices and sensitive actions. Return visits can use your phone's fingerprint or Face ID instead.</p>
+      </div>
+      <div class="sec-card alt">
+        <h3>Card linking, encrypted</h3>
+        <p>Card details are tokenized the moment they're added — Xborder Pay never stores raw card numbers, and any linked card can be frozen or removed instantly.</p>
+      </div>
+      <div class="sec-card alt">
+        <h3>Transaction monitoring</h3>
+        <p>Unusual amounts, new recipients, or new countries trigger extra verification and, where needed, a manual review before funds move.</p>
+      </div>
+      <div class="sec-card">
+        <h3>Full rate transparency</h3>
+        <p>Every conversion shows the exact rate and fee, locked for 60 seconds, before you confirm — nothing recalculated after the fact.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="compliance">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="compEyebrow">Compliance &amp; licensing</div>
+      <h2 data-i18n="compTitle">The unglamorous part that makes it safe to trust us.</h2>
+      <p data-i18n="compLede">A payments network only works if regulators, banks, and card networks trust it too.</p>
+    </div>
+    <div class="compliance-grid">
+      <div class="badge-card">
+        <div class="badge-icon">📜</div>
+        <h3>Licensed money transmitter</h3>
+        <p>Operating under money transmission / payment institution licenses in each market served, in partnership with local regulators.</p>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon">💳</div>
+        <h3>PCI DSS Level 1</h3>
+        <p>Card data is handled by a PCI DSS Level 1 certified processing partner — raw card numbers never touch our own servers.</p>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon">🛡️</div>
+        <h3>AML / CFT program</h3>
+        <p>Sanctions-list screening, transaction monitoring, and suspicious-activity reporting run on every account and every transfer.</p>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon">🔐</div>
+        <h3>Data protection</h3>
+        <p>Encryption in transit and at rest, aligned to ISO 27001 practices, with data handled per applicable regional privacy law.</p>
+      </div>
+    </div>
+    <div class="compliance-note">
+      <strong>Note on this prototype:</strong> the badges above represent the licensing and certifications a live cross-border payments product would need to obtain — they are shown here as placeholders to illustrate the requirement, not as claims about a real, currently licensed entity.
+    </div>
+  </section>
+
+  <section id="currencies">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="currEyebrow">Where you can send</div>
+      <h2 data-i18n="currTitle">One wallet, dozens of currencies.</h2>
+    </div>
+    <div class="currency-grid">
+      <div class="curr-chip"><div class="code">USD</div><div class="country">United States</div></div>
+      <div class="curr-chip"><div class="code">EUR</div><div class="country">Eurozone</div></div>
+      <div class="curr-chip"><div class="code">GBP</div><div class="country">United Kingdom</div></div>
+      <div class="curr-chip"><div class="code">KES</div><div class="country">Kenya</div></div>
+      <div class="curr-chip"><div class="code">NGN</div><div class="country">Nigeria</div></div>
+      <div class="curr-chip"><div class="code">GHS</div><div class="country">Ghana</div></div>
+      <div class="curr-chip"><div class="code">ZAR</div><div class="country">South Africa</div></div>
+      <div class="curr-chip"><div class="code">INR</div><div class="country">India</div></div>
+      <div class="curr-chip"><div class="code">AED</div><div class="country">UAE</div></div>
+      <div class="curr-chip"><div class="code">CAD</div><div class="country">Canada</div></div>
+      <div class="curr-chip"><div class="code">AUD</div><div class="country">Australia</div></div>
+      <div class="curr-chip"><div class="code">JPY</div><div class="country">Japan</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="logo"><span class="logo-mark"></span>Xborder Pay</div>
+        <p class="fine">Prototype interface for demonstration purposes. Xborder Pay is not a licensed money transmitter — moving real funds would require regulatory licensing, banking partnerships, and PCI-DSS certified card processing in each operating market.</p>
+      </div>
+      <div class="foot-links">
+        <div><strong>Product</strong><a href="#how">How it works</a><a href="#security">Security</a><a href="#compliance">Compliance</a><a href="#currencies">Currencies</a></div>
+        <div><strong>Company</strong><a href="#">About</a><a href="#">Careers</a><a href="#">Contact</a></div>
+        <div><strong>Legal</strong><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Compliance</a></div>
+        <div><strong>Support</strong><a href="tel:+254114144934">📞 +254 114 144 934</a><a href="https://wa.me/254114144934" target="_blank" rel="noopener">💬 WhatsApp us</a></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ APP (login / register / otp / kyc / card / dashboard) ============ -->
+<div id="app">
+  <div class="app-topbar">
+    <div class="logo"><span class="logo-mark"></span>Xborder Pay</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="tel:+254114144934" style="font-size:13px;color:var(--ash);text-decoration:none;font-weight:600;">🆘 Need help? +254 114 144 934</a>
+      <button class="back-link" onclick="exitApp()">← Back to site</button>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="app-shell" id="view-login" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Welcome back</div>
+      <h2 class="panel-title">Log in to Xborder Pay</h2>
+      <p class="panel-sub">Use your phone's fingerprint or Face ID for a one-tap login, or verify with a fresh code.</p>
+
+      <button class="login-bio-btn" onclick="startBiometricLogin()">
+        <span class="icon">🔓</span>
+        <strong>Continue with fingerprint / Face ID</strong>
+        <span class="sub" id="bioLoginHint">Uses your phone's built-in biometrics</span>
+      </button>
+
+      <div class="divider">or continue with a code</div>
+
+      <div class="field">
+        <label for="loginContact">Mobile number or email</label>
+        <input type="text" id="loginContact" placeholder="+254 7XX XXX XXX or you@example.com">
+      </div>
+      <div class="field">
+        <label for="loginCaptchaA">Quick check — <span id="loginCaptchaQ" class="mono">4 + 7 = ?</span></label>
+        <input type="number" id="loginCaptchaA" placeholder="Your answer">
+      </div>
+      <div class="field-error" id="loginError">Enter a valid mobile number or email.</div>
+      <button class="btn btn-primary btn-block" onclick="submitLogin()">Send verification code →</button>
+      <a class="skip-link" onclick="showView('recover')">Can't access your phone or email? Recover account</a>
+    </div>
+  </div>
+
+  <!-- ACCOUNT RECOVERY -->
+  <div class="app-shell" id="view-recover" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Account recovery</div>
+      <h2 class="panel-title">Recover your account</h2>
+      <p class="panel-sub">Because losing your phone or email shouldn't mean losing access forever — but for the same reason, recovery isn't instant. A quick code alone can't safely prove it's you here, so this goes to a human for review.</p>
+
+      <div class="field">
+        <label for="recoverContact">Mobile number or email on the account</label>
+        <input type="text" id="recoverContact" placeholder="+254 7XX XXX XXX or you@example.com">
+      </div>
+      <div class="field">
+        <label for="recoverIdInfo">Something only you'd know (last 4 digits of linked card, ID number, etc.)</label>
+        <input type="text" id="recoverIdInfo" placeholder="e.g. card ending 4242">
+      </div>
+      <div class="field-error" id="recoverError">Fill in both fields so support can verify it's you.</div>
+      <button class="btn btn-primary btn-block" onclick="submitRecovery()">Submit recovery request →</button>
+      <div id="recoverSuccess" style="display:none;" class="demo-banner">
+        <strong>Request received.</strong> Our support team will contact you within 24 hours to verify your identity and restore access. For anything urgent, call or WhatsApp <strong>+254 114 144 934</strong>.
+      </div>
+      <a class="skip-link" onclick="showView('login')">← Back to log in</a>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="app-shell" id="view-register" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Step 1 of 4</div>
+      <h2 class="panel-title" data-i18n="regTitle">Create your account</h2>
+      <p class="panel-sub" data-i18n="regSub">Register with your mobile number or email — we'll verify it with a one-time code before your account can send or receive money.</p>
+
+      <div class="tab-switch">
+        <button id="tabPhone" class="active" onclick="setRegTab('phone')">Mobile number</button>
+        <button id="tabEmail" onclick="setRegTab('email')">Email</button>
+      </div>
+
+      <div class="field" id="fieldPhone">
+        <label for="regPhone">Mobile number</label>
+        <div style="display:flex;gap:8px;">
+          <select style="width:110px;" id="regCountryCode">
+            <option value="+254">🇰🇪 +254</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+234">🇳🇬 +234</option>
+            <option value="+91">🇮🇳 +91</option>
+          </select>
+          <input type="tel" id="regPhone" placeholder="712 345 678">
+        </div>
+      </div>
+
+      <div class="field" id="fieldEmail" style="display:none;">
+        <label for="regEmail">Email address</label>
+        <input type="email" id="regEmail" placeholder="you@example.com">
+      </div>
+
+      <div class="field">
+        <label for="regName">Full name</label>
+        <input type="text" id="regName" placeholder="As it appears on your ID">
+      </div>
+
+      <div class="field">
+        <label for="regHomeCurrency">Home currency</label>
+        <select id="regHomeCurrency">
+          <option value="KES">🇰🇪 Kenyan Shilling (KES)</option>
+          <option value="USD">🇺🇸 US Dollar (USD)</option>
+          <option value="GBP">🇬🇧 British Pound (GBP)</option>
+          <option value="EUR">🇪🇺 Euro (EUR)</option>
+          <option value="NGN">🇳🇬 Nigerian Naira (NGN)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="regCaptchaA">Quick check — <span id="regCaptchaQ" class="mono">4 + 7 = ?</span></label>
+        <input type="number" id="regCaptchaA" placeholder="Your answer">
+      </div>
+
+      <div class="field-error" id="regError">Enter your name and a valid contact so we know where to send your code.</div>
+      <button class="btn btn-primary btn-block" data-i18n="regCta" onclick="submitRegister()">Send verification code →</button>
+      <p style="text-align:center;font-size:12px;color:var(--ash);margin-top:16px;">By continuing you agree to Xborder Pay's Terms and Privacy Policy.</p>
+    </div>
+  </div>
+
+  <!-- OTP -->
+  <div class="app-shell" id="view-otp" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow" id="otpEyebrow">Step 2 of 4</div>
+      <h2 class="panel-title" data-i18n="otpTitle">Enter your code</h2>
+      <p class="panel-sub" id="otpSub">We sent a 6-digit code to your registered contact.</p>
+
+      <div class="demo-banner">
+        <strong>Demo mode:</strong> no real SMS/email is sent here. Your code is <strong id="demoOtpCode">000000</strong> — in production this would arrive by SMS or email only.
+      </div>
+
+      <div class="otp-boxes" id="otpBoxes">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+      </div>
+      <div class="otp-timer mono" id="otpTimer">Code expires in 1:30</div>
+      <div class="field-error" id="otpError">That code didn't match. Check it and try again.</div>
+
+      <button class="btn btn-primary btn-block" id="otpVerifyBtn" onclick="verifyOtp()" style="margin-top:14px;">Verify and continue →</button>
+      <div class="resend">Didn't get it? <button onclick="resendOtp()">Resend code</button></div>
+    </div>
+  </div>
+
+  <!-- KYC -->
+  <div class="app-shell" id="view-kyc" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Step 3 of 4</div>
+      <h2 class="panel-title" data-i18n="kycTitle">Verify your identity</h2>
+      <p class="panel-sub" data-i18n="kycSub">A quick identity check raises your daily sending limit and helps us keep the network free of fraud. This takes about a minute.</p>
+
+      <div class="kyc-status" id="kycStatusBanner">
+        <span class="kyc-dot"></span>
+        <span id="kycStatusText">Not yet verified — daily sending limit is reduced until this is complete.</span>
+      </div>
+
+      <div class="field">
+        <label for="idType">ID type</label>
+        <select id="idType">
+          <option>National ID</option>
+          <option>Passport</option>
+          <option>Driver's licence</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="idNumber">ID number</label>
+        <input type="text" id="idNumber" placeholder="e.g. 32145678">
+      </div>
+
+      <div class="field">
+        <label>ID photo (front)</label>
+        <label class="kyc-dropzone" id="dzFront">
+          <input type="file" accept="image/*" style="display:none" onchange="markKycFile('front', this)">
+          <span id="dzFrontText">📄 Tap to upload a photo of your ID</span>
+        </label>
+      </div>
+      <div class="field">
+        <label>Selfie</label>
+        <label class="kyc-dropzone" id="dzSelfie">
+          <input type="file" accept="image/*" style="display:none" onchange="markKycFile('selfie', this)">
+          <span id="dzSelfieText">🤳 Tap to take or upload a selfie</span>
+        </label>
+      </div>
+
+      <div class="field-error" id="kycError">Add your ID number and both photos to continue.</div>
+
+      <button class="btn btn-primary btn-block" id="kycSubmitBtn" onclick="submitKyc()">Submit for verification →</button>
+      <button class="btn btn-primary btn-block" id="kycContinueBtn" style="display:none;" onclick="showView('card')">Continue to card linking →</button>
+      <a class="skip-link" onclick="skipKyc()">Skip for now — verify later (lower limits apply)</a>
+    </div>
+  </div>
+
+  <!-- LINK CARD -->
+  <div class="app-shell" id="view-card" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Step 4 of 4</div>
+      <h2 class="panel-title" data-i18n="cardTitle">Link a card</h2>
+      <p class="panel-sub" data-i18n="cardSub">Add a debit or credit card to fund your wallet instantly. Card numbers are tokenized — Xborder Pay never stores the raw number.</p>
+
+      <div class="field">
+        <label for="cardName">Name on card</label>
+        <input type="text" id="cardName" placeholder="As printed on the card">
+      </div>
+      <div class="field">
+        <label for="cardNumber">Card number</label>
+        <input type="text" id="cardNumber" placeholder="4242 4242 4242 4242" maxlength="19" oninput="formatCardNumber(this)">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="cardExp">Expiry</label>
+          <input type="text" id="cardExp" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+        </div>
+        <div class="field">
+          <label for="cardCvv">CVV</label>
+          <input type="password" id="cardCvv" placeholder="•••" maxlength="4">
+        </div>
+      </div>
+      <div class="field-error" id="cardError">Check your card number, expiry, and CVV.</div>
+      <div class="demo-banner">In production, linking a card would also trigger your bank's 3D Secure check — a code or approval prompt from your card issuer — before it's accepted. That step needs a real card network and isn't something a demo can simulate honestly.</div>
+
+      <button class="btn btn-primary btn-block" onclick="submitCard()">Link card and finish →</button>
+      <a class="skip-link" onclick="goToDashboard()">Skip for now — I'll link a card later</a>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" style="display:none;">
+    <div class="dash-shell">
+      <div class="dash-header">
+        <h2 style="font-size:22px;" data-i18n="dashWelcome">Welcome back, <span id="dashName">Jane</span></h2>
+        <div class="avatar-pill">
+          <div class="avatar" id="dashAvatarInitial">J</div>
+          <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="logout(false)">Log out</button>
+        </div>
+      </div>
+
+      <div class="bio-prompt" id="bioPrompt" style="display:none;">
+        <div>
+          <strong>Sign in faster with your fingerprint or Face ID</strong>
+          <span>Your biometrics never leave your phone — Xborder Pay only learns that the check passed.</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          <button class="btn btn-primary" style="padding:9px 16px;font-size:13px;" onclick="enableBiometricFromPrompt()">Enable</button>
+          <button class="btn btn-ghost" style="padding:9px 16px;font-size:13px;" onclick="dismissBioPrompt()">Not now</button>
+        </div>
+      </div>
+
+      <div class="balance-hero">
+        <div>
+          <div class="label">Total balance</div>
+          <div class="amount" id="dashBalance">0.00 KES</div>
+        </div>
+        <div class="wallet-strip" id="walletStrip"></div>
+      </div>
+
+      <div class="dash-grid">
+        <div>
+          <div class="dash-card">
+            <h3 data-i18n="sendTitle">Send money</h3>
+
+            <div class="payout-tabs" id="payoutTabs">
+              <button class="active" onclick="setPayoutMethod('wallet')">Xborder wallet</button>
+              <button onclick="setPayoutMethod('bank')">Bank account</button>
+              <button onclick="setPayoutMethod('mobile')">Mobile money</button>
+            </div>
+
+            <div class="field">
+              <label for="sendCurrency">Recipient gets</label>
+              <select id="sendCurrency" onchange="calcSend()">
+                <option value="USD">🇺🇸 USD</option>
+                <option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option>
+                <option value="NGN">🇳🇬 NGN</option>
+                <option value="INR">🇮🇳 INR</option>
+                <option value="KES">🇰🇪 KES</option>
+              </select>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label for="sendAmount">Amount (your currency)</label>
+                <input type="number" id="sendAmount" value="50" oninput="calcSend()">
+              </div>
+              <div class="field">
+                <label>They receive</label>
+                <input type="text" id="sendResult" disabled>
+              </div>
+            </div>
+            <div class="lock-chip" id="sendLockChip">🔒 Rate locked 1:00</div>
+
+            <!-- Wallet payout fields -->
+            <div id="payoutFieldsWallet">
+              <div class="field">
+                <label for="walletRecipient">Recipient (Xborder tag, phone, or email)</label>
+                <input type="text" id="walletRecipient" placeholder="@amara or amara@example.com">
+              </div>
+            </div>
+
+            <!-- Bank payout fields -->
+            <div id="payoutFieldsBank" style="display:none;">
+              <div class="field">
+                <label for="bankHolder">Account holder name</label>
+                <input type="text" id="bankHolder" placeholder="Full name on the account">
+              </div>
+              <div class="field">
+                <label for="bankName">Bank name</label>
+                <input type="text" id="bankName" placeholder="e.g. Equity Bank">
+              </div>
+              <div class="row-2">
+                <div class="field">
+                  <label for="bankAccount">Account number</label>
+                  <input type="text" id="bankAccount" placeholder="0123456789">
+                </div>
+                <div class="field">
+                  <label for="bankSwift">SWIFT / routing</label>
+                  <input type="text" id="bankSwift" placeholder="EQBLKENA">
+                </div>
+              </div>
+            </div>
+
+            <!-- Mobile money payout fields -->
+            <div id="payoutFieldsMobile" style="display:none;">
+              <div class="field">
+                <label for="momoHolder">Account holder name</label>
+                <input type="text" id="momoHolder" placeholder="Full name on the account">
+              </div>
+              <div class="field">
+                <label for="momoProvider">Provider</label>
+                <select id="momoProvider">
+                  <option>M-Pesa</option>
+                  <option>MTN MoMo</option>
+                  <option>Airtel Money</option>
+                  <option>Orange Money</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="momoPhone">Mobile number</label>
+                <input type="tel" id="momoPhone" placeholder="+254 7XX XXX XXX">
+              </div>
+            </div>
+
+            <div class="field-error" id="sendError">Fill in the recipient details to continue.</div>
+            <button class="btn btn-primary btn-block" onclick="requestSend()">Review &amp; send →</button>
+
+            <h3 style="margin-top:26px;">Recent activity</h3>
+            <div id="txList"></div>
+          </div>
+
+          <div class="dash-card">
+            <h3>Pay for goods or services</h3>
+            <p style="font-size:13px;color:var(--ash);line-height:1.5;margin-top:-8px;margin-bottom:18px;">Funds are held safely in escrow — the seller isn't paid until you confirm delivery, or automatically after 14 days if you don't act.</p>
+
+            <div class="field">
+              <label for="orderSeller">Seller / merchant</label>
+              <input type="text" id="orderSeller" placeholder="e.g. Kamau Electronics">
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label for="orderCategory">Type</label>
+                <select id="orderCategory">
+                  <option>Goods</option>
+                  <option>Service</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="orderAmount">Amount</label>
+                <input type="number" id="orderAmount" placeholder="0.00">
+              </div>
+            </div>
+            <div class="field">
+              <label for="orderDesc">What you're paying for</label>
+              <input type="text" id="orderDesc" placeholder="e.g. Wireless earbuds, order #4471">
+            </div>
+            <div class="field-error" id="orderError">Fill in the seller, description, and amount.</div>
+            <button class="btn btn-primary btn-block" onclick="submitEscrowPayment()">Pay securely →</button>
+
+            <h3 style="margin-top:26px;">My purchases &amp; purchase protection</h3>
+            <div id="orderList"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="dash-card">
+            <h3>Identity &amp; limits</h3>
+            <div class="risk-row">
+              <span>Verification status</span>
+              <span class="kyc-pill unverified" id="kycPill">Unverified</span>
+            </div>
+            <div class="risk-row">
+              <span>Sanctions screening</span>
+              <span class="val" style="color:var(--emerald-2);">✓ Cleared</span>
+            </div>
+            <div style="font-size:12px;color:var(--ash);margin:10px 0 4px;">Daily sending limit</div>
+            <div class="limit-bar-track"><div class="limit-bar-fill" id="limitBarFill" style="width:0%;"></div></div>
+            <div style="font-size:12px;color:var(--ash);margin-top:6px;" id="limitText">$0 of $100 used today</div>
+            <a class="verify-link" id="verifyLink" onclick="showView('kyc')" style="display:none;margin-top:10px;display:inline-block;">Complete verification to raise your limit →</a>
+          </div>
+
+          <div class="dash-card">
+            <h3>Linked cards</h3>
+            <div id="cardList"></div>
+            <button class="btn btn-ghost btn-block" onclick="showCardAdd()">+ Add another card</button>
+          </div>
+
+          <div class="dash-card">
+            <h3>Security</h3>
+            <div class="toggle-row">
+              <div><span class="t-title">Fingerprint / Face ID login</span><span class="t-sub" id="bioToggleSub">Sign in with your phone's biometrics</span></div>
+              <label class="switch"><input type="checkbox" id="bioLoginToggle" onchange="onBioToggle(this)"><span class="switch-track"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><span class="t-title">OTP on every transfer</span><span class="t-sub">Extra code required to send money</span></div>
+              <label class="switch"><input type="checkbox" id="otpEveryTx" checked onchange="guardToggleOff(this,'OTP on every transfer')"><span class="switch-track"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><span class="t-title">New-device alerts</span><span class="t-sub">Email me on unrecognized sign-ins</span></div>
+              <label class="switch"><input type="checkbox" id="deviceAlerts" checked onchange="showToast(this.checked?'New-device alerts enabled':'New-device alerts disabled')"><span class="switch-track"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><span class="t-title">Large-amount review</span><span class="t-sub">Flag transfers over roughly $500 for manual review</span></div>
+              <label class="switch"><input type="checkbox" id="largeAmountReview" checked onchange="guardToggleOff(this,'Large-amount review')"><span class="switch-track"></span></label>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <h3>Recent activity &amp; devices</h3>
+            <div id="sessionList"></div>
+            <p style="font-size:11px;color:var(--ash);margin-top:4px;">Session limits, idle sign-out, and this device list are enforced by the app in this demo — in production the server, not the browser, has the final say on which sessions are valid.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEND CONFIRM OTP -->
+  <div class="app-shell" id="view-send-otp" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Confirm transfer</div>
+      <h2 class="panel-title">One more check</h2>
+      <p class="panel-sub" id="sendOtpSub">Enter the code we sent to confirm this transfer.</p>
+      <div class="demo-banner">
+        <strong>Demo mode:</strong> your confirmation code is <strong id="demoSendOtp">000000</strong>.
+      </div>
+      <div class="otp-boxes" id="sendOtpBoxes">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+      </div>
+      <div class="otp-timer mono" id="sendOtpTimer">Code expires in 1:30</div>
+      <div class="field-error" id="sendOtpError">That code didn't match. Try again.</div>
+      <button class="btn btn-primary btn-block" id="sendOtpVerifyBtn" onclick="verifySendOtp()" style="margin-top:14px;">Confirm transfer →</button>
+      <div class="resend">Didn't get it? <button onclick="resendSendOtp()">Resend code</button></div>
+      <a class="skip-link" onclick="showView('dashboard')">Cancel</a>
+    </div>
+  </div>
+
+  <!-- STEP-UP OTP (for sensitive settings changes) -->
+  <div class="app-shell" id="view-stepup-otp" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Extra verification</div>
+      <h2 class="panel-title">Confirm it's you</h2>
+      <p class="panel-sub" id="stepUpSub">This change affects your account's security, so we need a fresh code first.</p>
+      <div class="demo-banner">
+        <strong>Demo mode:</strong> your confirmation code is <strong id="demoStepUpOtp">000000</strong>.
+      </div>
+      <div class="otp-boxes" id="stepUpOtpBoxes">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+      </div>
+      <div class="otp-timer mono" id="stepUpTimer">Code expires in 1:30</div>
+      <div class="field-error" id="stepUpError">That code didn't match. Try again.</div>
+      <button class="btn btn-primary btn-block" id="stepUpVerifyBtn" onclick="verifyStepUpOtp()" style="margin-top:14px;">Confirm →</button>
+      <div class="resend">Didn't get it? <button onclick="resendStepUpOtp()">Resend code</button></div>
+      <a class="skip-link" onclick="cancelStepUp()">Cancel</a>
+    </div>
+  </div>
+
+  <!-- DISPUTE / REFUND REQUEST -->
+  <div class="app-shell" id="view-dispute" style="display:none;">
+    <div class="card-panel">
+      <div class="panel-eyebrow">Purchase protection</div>
+      <h2 class="panel-title">Report a problem</h2>
+      <p class="panel-sub" id="disputeContext">Order details</p>
+
+      <div class="field">
+        <label for="disputeReason">What went wrong?</label>
+        <select id="disputeReason">
+          <option>Not delivered</option>
+          <option>Not as described</option>
+          <option>Damaged or defective</option>
+          <option>Duplicate charge</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="disputeNote">Tell us what happened</label>
+        <input type="text" id="disputeNote" placeholder="e.g. Ordered 9 Aug, never arrived, seller stopped responding">
+      </div>
+      <div class="field">
+        <label>Evidence (optional but helps your case)</label>
+        <label class="kyc-dropzone" id="dzEvidence">
+          <input type="file" accept="image/*" style="display:none" onchange="markDisputeEvidence(this)">
+          <span id="dzEvidenceText">📎 Attach a photo, screenshot, or tracking info</span>
+        </label>
+      </div>
+      <div class="field-error" id="disputeError">Add a short description of what went wrong.</div>
+
+      <div class="demo-banner">Refunds under $50 are auto-approved instantly in this demo. Larger amounts go to review — real review would involve seller evidence too, and can end in a partial refund or denial, not just approval.</div>
+
+      <button class="btn btn-primary btn-block" onclick="submitDispute()">Submit dispute →</button>
+      <a class="skip-link" onclick="cancelDispute()">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<!-- Biometric scan overlay -->
+<div class="biometric-overlay" id="bioOverlay">
+  <div class="pulse-ring">🫆</div>
+  <h3 id="bioOverlayTitle">Waiting for your phone…</h3>
+  <p id="bioOverlayText">Use your fingerprint or Face ID when prompted</p>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+/* ===================== DATA ===================== */
+const rates = { // units per 1 USD
+  USD:1, EUR:0.92, GBP:0.79, KES:129.4, NGN:1530, INR:83.1, GHS:14.7, ZAR:17.8, AED:3.67, CAD:1.36, AUD:1.52, JPY:149.2
+};
+const tickerPairs = [
+  ["USD/KES","129.40","up"],["EUR/USD","1.087","down"],["GBP/USD","1.266","up"],
+  ["USD/NGN","1530.20","up"],["USD/INR","83.10","down"],["USD/GHS","14.72","up"],
+  ["EUR/GBP","0.859","down"],["USD/ZAR","17.83","up"]
+];
+
+const UNVERIFIED_LIMIT_USD = 100;
+const VERIFIED_LIMIT_USD = 5000;
+const FLAG_THRESHOLD_USD = 500;
+const OTP_TTL_SECONDS = 90;
+const MAX_OTP_ATTEMPTS = 5;
+const OTP_LOCK_SECONDS = 30;
+const IDLE_WARN_MS = 35000;
+const IDLE_LIMIT_MS = 45000;
+const ESCROW_DAYS = 14;
+const SMALL_DISPUTE_AUTO_APPROVE_USD = 50;
+
+const state = {
+  regMethod:'phone',
+  contact:'',
+  name:'',
+  homeCurrency:'KES',
+  otp:'',
+  isLoginFlow:false,
+  cards:[],
+  balance:2450.00,
+  kycStatus:'unverified', // unverified | pending | verified
+  kyc:{ frontFile:false, selfieFile:false },
+  dailySentUSD:0,
+  payoutMethod:'wallet',
+  txCounter:0,
+  transactions:[
+    {id:-1, name:"Amara O.", meta:"Sent • NGN • Aug 9", amt:-45.00, dir:'neg'},
+    {id:-2, name:"Wallet top-up", meta:"Card •• 4242 • Aug 6", amt:200.00, dir:'pos'},
+    {id:-3, name:"Tom R.", meta:"Sent • GBP • Aug 2", amt:-80.00, dir:'neg'},
+  ],
+  pendingSend:null,
+  sendLockStarted:false,
+
+  // security additions
+  captcha:{ reg:0, login:0 },
+  otpAttempts:{ otp:0, sendOtp:0, stepUp:0 },
+  otpLocked:{ otp:false, sendOtp:false, stepUp:false },
+  otpExpired:{ otp:false, sendOtp:false, stepUp:false },
+  otpTimers:{ otp:null, sendOtp:null, stepUp:null },
+  stepUpAction:null,
+  stepUpRevert:null,
+  loggedIn:false,
+  lastActivity:Date.now(),
+  idleWarned:false,
+  sessions:[
+    { device:"This device — Chrome", location:"Nairobi, KE", time:"Active now", current:true, flagged:false, revoked:false },
+    { device:"iPhone — Safari", location:"Nairobi, KE", time:"2 days ago", current:false, flagged:false, revoked:false },
+    { device:"Chrome on Windows", location:"Lagos, NG", time:"5 days ago", current:false, flagged:true, revoked:false },
+  ],
+
+  // escrow / purchase protection
+  orders:[],
+  orderCounter:0,
+  currentDisputeOrderId:null,
+  disputeEvidence:false,
+};
+
+/* ===================== I18N ===================== */
+const translations = {
+  en:{
+    navHow:"How it works", navSecurity:"Security", navCompliance:"Compliance", navCurrencies:"Currencies",
+    navLogin:"Log in", navGetStarted:"Get started →",
+    heroEyebrow:"Cross-border transfers, same-day",
+    heroTitle:"Send money like it's <em>local</em>, wherever it's going.",
+    heroLede:"Xborder Pay lets anyone hold, convert, and send money across borders in the currency they already think in — verified by OTP, protected on every transfer.",
+    heroCta1:"Create free account →", heroCta2:"See how it works",
+    trust1:"🔒 OTP + biometric login", trust2:"🪪 Identity-verified accounts", trust3:"🌍 40+ currencies",
+    convLabel:"Live converter (demo rates)", convSend:"Send this amount →",
+    howEyebrow:"Getting started", howTitle:"Four steps between you and your first transfer.",
+    howLede:"Every account is verified before it can move money — that's what keeps the network safe for everyone sending through it.",
+    secEyebrow:"Built to be trusted", secTitle:"Every transfer is watched, every login is checked.",
+    compEyebrow:"Compliance & licensing", compTitle:"The unglamorous part that makes it safe to trust us.",
+    compLede:"A payments network only works if regulators, banks, and card networks trust it too.",
+    currEyebrow:"Where you can send", currTitle:"One wallet, dozens of currencies.",
+    regTitle:"Create your account", regSub:"Register with your mobile number or email — we'll verify it with a one-time code before your account can send or receive money.", regCta:"Send verification code →",
+    otpTitle:"Enter your code",
+    kycTitle:"Verify your identity", kycSub:"A quick identity check raises your daily sending limit and helps us keep the network free of fraud. This takes about a minute.",
+    cardTitle:"Link a card", cardSub:"Add a debit or credit card to fund your wallet instantly. Card numbers are tokenized — Xborder Pay never stores the raw number.",
+    dashWelcome:"Welcome back, ", sendTitle:"Send money",
+  },
+  fr:{
+    navHow:"Comment ça marche", navSecurity:"Sécurité", navCompliance:"Conformité", navCurrencies:"Devises",
+    navLogin:"Connexion", navGetStarted:"Commencer →",
+    heroEyebrow:"Transferts transfrontaliers, le jour même",
+    heroTitle:"Envoyez de l'argent comme si c'était <em>local</em>, où qu'il aille.",
+    heroLede:"Xborder Pay permet à chacun de détenir, convertir et envoyer de l'argent à l'international dans la devise de son choix — vérifié par OTP, protégé à chaque transfert.",
+    heroCta1:"Créer un compte gratuit →", heroCta2:"Voir comment ça marche",
+    trust1:"🔒 OTP + connexion biométrique", trust2:"🪪 Comptes vérifiés", trust3:"🌍 40+ devises",
+    convLabel:"Convertisseur en direct (taux de démo)", convSend:"Envoyer ce montant →",
+    howEyebrow:"Pour commencer", howTitle:"Quatre étapes avant votre premier transfert.",
+    howLede:"Chaque compte est vérifié avant de pouvoir déplacer de l'argent — c'est ce qui protège tout le réseau.",
+    secEyebrow:"Conçu pour inspirer confiance", secTitle:"Chaque transfert est surveillé, chaque connexion vérifiée.",
+    compEyebrow:"Conformité et licences", compTitle:"La partie peu glamour qui nous rend fiables.",
+    compLede:"Un réseau de paiement ne fonctionne que si les régulateurs, les banques et les réseaux de cartes lui font confiance.",
+    currEyebrow:"Où envoyer", currTitle:"Un portefeuille, des dizaines de devises.",
+    regTitle:"Créez votre compte", regSub:"Inscrivez-vous avec votre numéro de mobile ou votre e-mail — nous le vérifierons avec un code à usage unique.", regCta:"Envoyer le code de vérification →",
+    otpTitle:"Entrez votre code",
+    kycTitle:"Vérifiez votre identité", kycSub:"Une vérification rapide augmente votre limite d'envoi quotidienne et protège le réseau contre la fraude.",
+    cardTitle:"Associer une carte", cardSub:"Ajoutez une carte pour alimenter votre portefeuille instantanément. Les numéros sont tokenisés.",
+    dashWelcome:"Bon retour, ", sendTitle:"Envoyer de l'argent",
+  },
+  sw:{
+    navHow:"Jinsi inavyofanya kazi", navSecurity:"Usalama", navCompliance:"Uzingatiaji", navCurrencies:"Sarafu",
+    navLogin:"Ingia", navGetStarted:"Anza →",
+    heroEyebrow:"Uhamishaji wa fedha nje ya nchi, siku hiyo hiyo",
+    heroTitle:"Tuma pesa kama ilivyo <em>karibu</em>, popote inakoenda.",
+    heroLede:"Xborder Pay inaruhusu kila mtu kushikilia, kubadilisha, na kutuma pesa nje ya nchi katika sarafu wanayoifahamu — imethibitishwa kwa OTP, imelindwa kila uhamisho.",
+    heroCta1:"Fungua akaunti bila malipo →", heroCta2:"Ona jinsi inavyofanya kazi",
+    trust1:"🔒 OTP + kuingia kwa alama za mwili", trust2:"🪪 Akaunti zilizothibitishwa", trust3:"🌍 Sarafu zaidi ya 40",
+    convLabel:"Kibadilishaji cha moja kwa moja (bei za onyesho)", convSend:"Tuma kiasi hiki →",
+    howEyebrow:"Kuanza", howTitle:"Hatua nne kabla ya uhamisho wako wa kwanza.",
+    howLede:"Kila akaunti huthibitishwa kabla ya kuhamisha pesa — hii ndiyo inayoweka mtandao salama kwa kila mtu.",
+    secEyebrow:"Imejengwa kuaminika", secTitle:"Kila uhamisho unafuatiliwa, kila kuingia kunakaguliwa.",
+    compEyebrow:"Uzingatiaji na leseni", compTitle:"Sehemu isiyong'aa inayotufanya tuaminike.",
+    compLede:"Mtandao wa malipo hufanya kazi tu iwapo wasimamizi, benki, na mitandao ya kadi wanauamini pia.",
+    currEyebrow:"Unapoweza kutuma", currTitle:"Pochi moja, sarafu nyingi.",
+    regTitle:"Fungua akaunti yako", regSub:"Jisajili kwa nambari yako ya simu au barua pepe — tutaithibitisha kwa msimbo wa mara moja.", regCta:"Tuma msimbo wa uthibitisho →",
+    otpTitle:"Weka msimbo wako",
+    kycTitle:"Thibitisha utambulisho wako", kycSub:"Ukaguzi mfupi wa utambulisho huongeza kikomo chako cha kila siku cha kutuma na kusaidia kuzuia ulaghai.",
+    cardTitle:"Unganisha kadi", cardSub:"Ongeza kadi ya benki ili kujaza pochi yako papo hapo. Namba za kadi zimefichwa.",
+    dashWelcome:"Karibu tena, ", sendTitle:"Tuma pesa",
+  },
+  es:{
+    navHow:"Cómo funciona", navSecurity:"Seguridad", navCompliance:"Cumplimiento", navCurrencies:"Monedas",
+    navLogin:"Iniciar sesión", navGetStarted:"Empezar →",
+    heroEyebrow:"Transferencias internacionales, el mismo día",
+    heroTitle:"Envía dinero como si fuera <em>local</em>, sin importar el destino.",
+    heroLede:"Xborder Pay permite a cualquiera guardar, convertir y enviar dinero al extranjero en la moneda que ya conoce — verificado por OTP, protegido en cada transferencia.",
+    heroCta1:"Crear cuenta gratis →", heroCta2:"Ver cómo funciona",
+    trust1:"🔒 OTP + inicio biométrico", trust2:"🪪 Cuentas verificadas", trust3:"🌍 Más de 40 monedas",
+    convLabel:"Convertidor en vivo (tasas de demostración)", convSend:"Enviar este monto →",
+    howEyebrow:"Primeros pasos", howTitle:"Cuatro pasos antes de tu primera transferencia.",
+    howLede:"Toda cuenta se verifica antes de mover dinero — así se mantiene seguro todo el sistema.",
+    secEyebrow:"Diseñado para generar confianza", secTitle:"Cada transferencia se supervisa, cada inicio de sesión se verifica.",
+    compEyebrow:"Cumplimiento y licencias", compTitle:"La parte poco vistosa que nos hace confiables.",
+    compLede:"Una red de pagos solo funciona si reguladores, bancos y redes de tarjetas también confían en ella.",
+    currEyebrow:"A dónde puedes enviar", currTitle:"Una billetera, decenas de monedas.",
+    regTitle:"Crea tu cuenta", regSub:"Regístrate con tu número móvil o correo — lo verificaremos con un código de un solo uso.", regCta:"Enviar código de verificación →",
+    otpTitle:"Ingresa tu código",
+    kycTitle:"Verifica tu identidad", kycSub:"Una verificación rápida aumenta tu límite diario de envío y ayuda a prevenir el fraude.",
+    cardTitle:"Vincular una tarjeta", cardSub:"Agrega una tarjeta para recargar tu billetera al instante. Los números se tokenizan.",
+    dashWelcome:"Hola de nuevo, ", sendTitle:"Enviar dinero",
+  },
+  ar:{
+    navHow:"كيف يعمل", navSecurity:"الأمان", navCompliance:"الامتثال", navCurrencies:"العملات",
+    navLogin:"تسجيل الدخول", navGetStarted:"ابدأ ←",
+    heroEyebrow:"تحويلات دولية، في نفس اليوم",
+    heroTitle:"أرسل الأموال وكأنها <em>محلية</em>، أينما كانت وجهتها.",
+    heroLede:"يتيح Xborder Pay للجميع الاحتفاظ بالأموال وتحويلها وإرسالها عبر الحدود بالعملة التي يفكرون بها بالفعل — يتم التحقق عبر رمز لمرة واحدة، وحماية كل عملية تحويل.",
+    heroCta1:"أنشئ حسابًا مجانيًا ←", heroCta2:"شاهد كيف يعمل",
+    trust1:"🔒 رمز تحقق + دخول بيومتري", trust2:"🪪 حسابات موثقة الهوية", trust3:"🌍 أكثر من 40 عملة",
+    convLabel:"محول العملات المباشر (أسعار تجريبية)", convSend:"إرسال هذا المبلغ ←",
+    howEyebrow:"البدء", howTitle:"أربع خطوات قبل أول تحويل لك.",
+    howLede:"يتم التحقق من كل حساب قبل أن يتمكن من تحريك الأموال — وهذا ما يحافظ على أمان الشبكة للجميع.",
+    secEyebrow:"مصمم ليكون موثوقًا", secTitle:"تتم مراقبة كل تحويل، والتحقق من كل تسجيل دخول.",
+    compEyebrow:"الامتثال والتراخيص", compTitle:"الجزء غير البراق الذي يجعلنا جديرين بالثقة.",
+    compLede:"لا تعمل شبكة المدفوعات إلا إذا وثقت بها الجهات التنظيمية والبنوك وشبكات البطاقات أيضًا.",
+    currEyebrow:"إلى أين يمكنك الإرسال", currTitle:"محفظة واحدة، عشرات العملات.",
+    regTitle:"أنشئ حسابك", regSub:"سجّل برقم هاتفك المحمول أو بريدك الإلكتروني — سنتحقق منه برمز لمرة واحدة قبل أن يتمكن حسابك من إرسال أو استقبال الأموال.", regCta:"إرسال رمز التحقق ←",
+    otpTitle:"أدخل الرمز الخاص بك",
+    kycTitle:"تحقق من هويتك", kycSub:"يرفع التحقق السريع من الهوية حد الإرسال اليومي ويساعد في منع الاحتيال.",
+    cardTitle:"ربط بطاقة", cardSub:"أضف بطاقة خصم أو ائتمان لتعبئة محفظتك فورًا. أرقام البطاقات مُرمّزة.",
+    dashWelcome:"مرحبًا بعودتك، ", sendTitle:"إرسال أموال",
+  },
+};
+
+function applyLanguage(lang){
+  const dict = translations[lang] || translations.en;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(dict[key]) el.innerHTML = dict[key] + (el.id==='dashName' ? '' : (el.querySelector && el.querySelector('#dashName') ? document.getElementById('dashName').outerHTML : ''));
+  });
+  // dashWelcome needs the name span re-inserted since innerHTML overwrite removes it
+  const dashHeading = document.querySelector('[data-i18n="dashWelcome"]');
+  if(dashHeading){
+    const nameVal = state.name || 'Jane';
+    dashHeading.innerHTML = (dict.dashWelcome || translations.en.dashWelcome) + `<span id="dashName">${nameVal}</span>`;
+  }
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang==='ar') ? 'rtl' : 'ltr';
+}
+
+/* ===================== TICKER ===================== */
+function buildTicker(){
+  const track = document.getElementById('tickerTrack');
+  const items = tickerPairs.map(([pair,val,dir])=>`
+    <span class="ticker-item"><span class="pair">${pair}</span><span class="${dir}">${dir==='up'?'▲':'▼'} ${val}</span></span>
+  `).join('');
+  track.innerHTML = items + items;
+}
+buildTicker();
+
+/* ===================== CONVERTER (landing) ===================== */
+function convert(source){
+  const fromCur = document.getElementById('fromCur').value;
+  const toCur = document.getElementById('toCur').value;
+  const fromAmt = document.getElementById('fromAmt');
+  const toAmt = document.getElementById('toAmt');
+  const rate = rates[toCur]/rates[fromCur];
+  if(source==='from'){
+    toAmt.value = (parseFloat(fromAmt.value||0)*rate).toFixed(2);
+  } else {
+    fromAmt.value = (parseFloat(toAmt.value||0)/rate).toFixed(2);
+  }
+  document.getElementById('rateLabel').textContent = `1 ${fromCur} = ${rate.toFixed(2)} ${toCur}`;
+}
+function swapCur(){
+  const f = document.getElementById('fromCur'), t = document.getElementById('toCur');
+  [f.value,t.value] = [t.value,f.value];
+  convert('from');
+}
+convert('from');
+
+/* ===================== RATE LOCK TIMER ===================== */
+function startRateLock(chipId, seconds){
+  let remaining = seconds;
+  const chip = document.getElementById(chipId);
+  if(!chip) return;
+  function tick(){
+    if(remaining<=0){
+      chip.textContent = `🔄 Refreshing rate…`;
+      setTimeout(()=>{ remaining = seconds; }, 500);
+    } else {
+      const m = Math.floor(remaining/60), s = remaining%60;
+      chip.textContent = `🔒 Rate locked ${m}:${s.toString().padStart(2,'0')}`;
+      remaining--;
+    }
+  }
+  tick();
+  setInterval(tick,1000);
+}
+startRateLock('heroLockChip',60);
+
+/* ===================== NAV BETWEEN SITE / APP ===================== */
+function goToApp(view){
+  document.getElementById('site').style.display='none';
+  document.getElementById('app').style.display='block';
+  showView(view);
+  window.scrollTo(0,0);
+}
+function exitApp(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('site').style.display='block';
+  window.scrollTo(0,0);
+}
+function showView(name){
+  ['login','register','otp','kyc','card','dashboard','send-otp','stepup-otp','recover','dispute'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = (v===name)?'block':'none';
+  });
+  window.scrollTo(0,0);
+}
+
+/* ===================== TOAST ===================== */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+/* ===================== CAPTCHA ===================== */
+function newCaptcha(prefix){
+  const a = Math.floor(Math.random()*8)+2;
+  const b = Math.floor(Math.random()*8)+2;
+  state.captcha[prefix] = a+b;
+  const q = document.getElementById(prefix+'CaptchaQ');
+  if(q) q.textContent = `${a} + ${b} = ?`;
+}
+newCaptcha('reg');
+newCaptcha('login');
+
+/* ===================== IDLE SESSION TIMEOUT ===================== */
+function markActivity(){
+  state.lastActivity = Date.now();
+  state.idleWarned = false;
+}
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+  document.addEventListener(evt, markActivity, { passive:true });
+});
+setInterval(()=>{
+  if(!state.loggedIn) return;
+  const idle = Date.now() - state.lastActivity;
+  if(idle > IDLE_LIMIT_MS){
+    logout(true);
+  } else if(idle > IDLE_WARN_MS && !state.idleWarned){
+    state.idleWarned = true;
+    showToast("You'll be signed out soon due to inactivity");
+  }
+}, 2000);
+
+function logout(isIdle){
+  state.loggedIn = false;
+  showToast(isIdle ? 'Signed out due to inactivity' : 'Signed out ✓');
+  exitApp();
+}
+
+/* ===================== LOGIN ===================== */
+function submitLogin(){
+  const contact = document.getElementById('loginContact').value.trim();
+  const captchaVal = parseInt(document.getElementById('loginCaptchaA').value);
+  if(!contact || (!contact.includes('@') && contact.length<7)){
+    document.getElementById('loginError').textContent = 'Enter a valid mobile number or email.';
+    document.getElementById('loginError').style.display='block';
+    return;
+  }
+  if(captchaVal !== state.captcha.login){
+    document.getElementById('loginError').textContent = 'That verification answer was wrong — try the new one.';
+    document.getElementById('loginError').style.display='block';
+    newCaptcha('login');
+    document.getElementById('loginCaptchaA').value='';
+    return;
+  }
+  document.getElementById('loginError').style.display='none';
+  state.contact = contact;
+  state.isLoginFlow = true;
+  startOtp('otp', `We sent a 6-digit code to ${contact}.`);
+  document.getElementById('otpEyebrow').textContent = 'Log in';
+  showView('otp');
+}
+
+/* ===================== REAL BIOMETRICS (WebAuthn) ===================== */
+// Uses the browser's WebAuthn API, which hands the check to the phone's own
+// fingerprint / Face ID system. The biometric data never reaches this page.
+const BIO_STORE_KEY = 'xborder_bio_v1';
+let bioMemory = null; // fallback if storage is blocked
+
+function getBio(){
+  try{
+    const raw = localStorage.getItem(BIO_STORE_KEY);
+    return raw ? JSON.parse(raw) : bioMemory;
+  }catch(e){ return bioMemory; }
+}
+function setBio(obj){
+  bioMemory = obj;
+  try{
+    if(obj) localStorage.setItem(BIO_STORE_KEY, JSON.stringify(obj));
+    else localStorage.removeItem(BIO_STORE_KEY);
+  }catch(e){}
+}
+function toB64u(buf){
+  let str = '';
+  new Uint8Array(buf).forEach(b=>{ str += String.fromCharCode(b); });
+  return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function fromB64u(str){
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length % 4) str += '=';
+  const bin = atob(str);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return arr.buffer;
+}
+
+state.bioAvailable = false;
+state.bioPromptDismissed = false;
+
+async function detectBiometrics(){
+  try{
+    if(window.PublicKeyCredential && window.isSecureContext &&
+       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+      state.bioAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    }
+  }catch(e){ state.bioAvailable = false; }
+  updateBioUI();
+}
+
+function bioUnavailableMessage(){
+  if(!window.isSecureContext) return 'Fingerprint / Face ID needs a secure (https) page — host the file on Netlify or similar, then open it on your phone.';
+  if(!window.PublicKeyCredential) return "This browser doesn't support fingerprint / Face ID sign-in.";
+  return 'No fingerprint or Face ID is set up on this device. Add one in your phone settings first.';
+}
+
+function updateBioUI(){
+  const enrolled = !!getBio();
+  const toggle = document.getElementById('bioLoginToggle');
+  if(toggle) toggle.checked = enrolled;
+  const sub = document.getElementById('bioToggleSub');
+  if(sub) sub.textContent = enrolled ? 'Enabled on this device' : (state.bioAvailable ? "Sign in with your phone's biometrics" : 'Not available on this device or page');
+  const hint = document.getElementById('bioLoginHint');
+  if(hint) hint.textContent = enrolled ? 'Use your fingerprint or Face ID' : (state.bioAvailable ? 'Not set up yet — log in with a code, then enable it' : "Uses your phone's built-in biometrics");
+  const prompt = document.getElementById('bioPrompt');
+  if(prompt) prompt.style.display = (state.bioAvailable && !enrolled && !state.bioPromptDismissed && state.loggedIn) ? 'flex' : 'none';
+}
+
+function showBioOverlay(title, text){
+  document.getElementById('bioOverlayTitle').textContent = title;
+  document.getElementById('bioOverlayText').textContent = text;
+  document.getElementById('bioOverlay').classList.add('show');
+}
+function hideBioOverlay(){
+  document.getElementById('bioOverlay').classList.remove('show');
+}
+
+async function enrollBiometric(){
+  if(!state.bioAvailable){ showToast(bioUnavailableMessage()); return false; }
+  showBioOverlay('Set up fingerprint / Face ID', "Follow your phone's prompt to confirm it's you");
+  try{
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const userId = crypto.getRandomValues(new Uint8Array(16));
+    const cred = await navigator.credentials.create({
+      publicKey:{
+        challenge,
+        rp:{ name:'Xborder Pay' },
+        user:{ id:userId, name: state.contact || 'xborder-user', displayName: state.name || 'Xborder user' },
+        pubKeyCredParams:[{ type:'public-key', alg:-7 },{ type:'public-key', alg:-257 }],
+        authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred' },
+        timeout:60000,
+        attestation:'none',
+      }
+    });
+    setBio({
+      credId: toB64u(cred.rawId),
+      profile:{ name:state.name, contact:state.contact, homeCurrency:state.homeCurrency, kycStatus:state.kycStatus },
+    });
+    hideBioOverlay();
+    showToast('Fingerprint / Face ID login enabled ✓');
+    updateBioUI();
+    return true;
+  }catch(e){
+    hideBioOverlay();
+    showToast(e && e.name==='NotAllowedError' ? 'Biometric setup cancelled' : 'Could not set up biometrics on this device');
+    updateBioUI();
+    return false;
+  }
+}
+
+async function startBiometricLogin(){
+  const saved = getBio();
+  if(!saved){
+    showToast(state.bioAvailable ? 'Not set up yet — log in with a code first, then enable fingerprint / Face ID.' : bioUnavailableMessage());
+    return;
+  }
+  showBioOverlay('Waiting for your phone…', 'Use your fingerprint or Face ID when prompted');
+  try{
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        allowCredentials:[{ type:'public-key', id: fromB64u(saved.credId), transports:['internal'] }],
+        userVerification:'required',
+        timeout:60000,
+      }
+    });
+    hideBioOverlay();
+    const p = saved.profile || {};
+    state.name = p.name || 'there';
+    state.contact = p.contact || '';
+    state.homeCurrency = p.homeCurrency || 'KES';
+    state.kycStatus = p.kycStatus || 'unverified';
+    goToDashboard();
+    showToast('Signed in with biometrics ✓');
+  }catch(e){
+    hideBioOverlay();
+    showToast(e && e.name==='NotAllowedError' ? 'Biometric check cancelled or failed' : 'Biometric sign-in is not available here');
+  }
+}
+
+async function onBioToggle(el){
+  if(el.checked){
+    const ok = await enrollBiometric();
+    if(!ok) el.checked = false;
+  } else {
+    el.checked = true; // hold on until a fresh OTP confirms the change
+    requestStepUp(
+      ()=>{ setBio(null); updateBioUI(); showToast('Fingerprint / Face ID login disabled'); },
+      ()=>{ el.checked = true; },
+      'Confirm turning off fingerprint / Face ID login.'
+    );
+  }
+}
+async function enableBiometricFromPrompt(){
+  await enrollBiometric();
+}
+function dismissBioPrompt(){
+  state.bioPromptDismissed = true;
+  updateBioUI();
+}
+
+detectBiometrics();
+
+function loadDemoAccount(){
+  state.name = 'Asha Mwangi';
+  state.contact = '+254 712 345 678';
+  state.homeCurrency = 'KES';
+  state.kycStatus = 'verified';
+  state.cards = [{ name:'Asha Mwangi', last4:'4242', exp:'09/28' }];
+  state.balance = 2450.00;
+  state.dailySentUSD = 0;
+  goToDashboard();
+}
+
+/* ===================== ACCOUNT RECOVERY ===================== */
+function submitRecovery(){
+  const contact = document.getElementById('recoverContact').value.trim();
+  const info = document.getElementById('recoverIdInfo').value.trim();
+  if(!contact || !info){
+    document.getElementById('recoverError').style.display='block';
+    return;
+  }
+  document.getElementById('recoverError').style.display='none';
+  document.getElementById('recoverSuccess').style.display='block';
+  showToast('Recovery request submitted');
+}
+
+/* ===================== REGISTER ===================== */
+function setRegTab(method){
+  state.regMethod = method;
+  document.getElementById('tabPhone').classList.toggle('active', method==='phone');
+  document.getElementById('tabEmail').classList.toggle('active', method==='email');
+  document.getElementById('fieldPhone').style.display = method==='phone' ? 'block':'none';
+  document.getElementById('fieldEmail').style.display = method==='email' ? 'block':'none';
+}
+
+function genOtp(){
+  return String(Math.floor(100000 + Math.random()*900000));
+}
+
+function submitRegister(){
+  const name = document.getElementById('regName').value.trim();
+  let contact = '';
+  if(state.regMethod==='phone'){
+    const code = document.getElementById('regCountryCode').value;
+    const num = document.getElementById('regPhone').value.trim();
+    if(!num || num.length<7){ document.getElementById('regError').textContent='Enter your name and a valid contact so we know where to send your code.'; document.getElementById('regError').style.display='block'; return; }
+    contact = code+' '+num;
+  } else {
+    const email = document.getElementById('regEmail').value.trim();
+    if(!email.includes('@') || !email.includes('.')){ document.getElementById('regError').textContent='Enter your name and a valid contact so we know where to send your code.'; document.getElementById('regError').style.display='block'; return; }
+    contact = email;
+  }
+  if(!name){ document.getElementById('regError').textContent='Enter your name and a valid contact so we know where to send your code.'; document.getElementById('regError').style.display='block'; return; }
+
+  const captchaVal = parseInt(document.getElementById('regCaptchaA').value);
+  if(captchaVal !== state.captcha.reg){
+    document.getElementById('regError').textContent = 'That verification answer was wrong — try the new one.';
+    document.getElementById('regError').style.display='block';
+    newCaptcha('reg');
+    document.getElementById('regCaptchaA').value='';
+    return;
+  }
+
+  document.getElementById('regError').style.display='none';
+  state.name = name;
+  state.contact = contact;
+  state.isLoginFlow = false;
+  state.homeCurrency = document.getElementById('regHomeCurrency').value;
+
+  startOtp('otp', `We sent a 6-digit code to ${contact}.`);
+  document.getElementById('otpEyebrow').textContent = 'Step 2 of 4';
+  showView('otp');
+}
+
+/* ===================== OTP ===================== */
+function wireOtpBoxes(containerId){
+  const inputs = document.querySelectorAll('#'+containerId+' input');
+  inputs.forEach((inp,i)=>{
+    inp.addEventListener('input',()=>{
+      inp.value = inp.value.replace(/[^0-9]/g,'');
+      if(inp.value && i<inputs.length-1) inputs[i+1].focus();
+    });
+    inp.addEventListener('keydown',(e)=>{
+      if(e.key==='Backspace' && !inp.value && i>0) inputs[i-1].focus();
+    });
+  });
+}
+wireOtpBoxes('otpBoxes');
+wireOtpBoxes('sendOtpBoxes');
+wireOtpBoxes('stepUpOtpBoxes');
+
+function clearOtpBoxes(containerId){
+  document.querySelectorAll('#'+containerId+' input').forEach(i=>i.value='');
+  document.querySelectorAll('#'+containerId+' input')[0]?.focus();
+}
+function readOtpBoxes(containerId){
+  return Array.from(document.querySelectorAll('#'+containerId+' input')).map(i=>i.value).join('');
+}
+
+/* ---- shared OTP engine: expiry, attempt limits, cooldown lockout ---- */
+const OTP_CONFIG = {
+  otp:     { demoId:'demoOtpCode',     subId:'otpSub',     boxId:'otpBoxes',     btnId:'otpVerifyBtn',     errorId:'otpError',     timerId:'otpTimer' },
+  sendOtp: { demoId:'demoSendOtp',     subId:'sendOtpSub', boxId:'sendOtpBoxes', btnId:'sendOtpVerifyBtn', errorId:'sendOtpError', timerId:'sendOtpTimer' },
+  stepUp:  { demoId:'demoStepUpOtp',   subId:'stepUpSub',  boxId:'stepUpOtpBoxes', btnId:'stepUpVerifyBtn', errorId:'stepUpError', timerId:'stepUpTimer' },
+};
+
+function startOtp(prefix, subMessage){
+  const cfg = OTP_CONFIG[prefix];
+  state.otp = genOtp();
+  document.getElementById(cfg.demoId).textContent = state.otp;
+  if(subMessage) document.getElementById(cfg.subId).textContent = subMessage;
+  clearOtpBoxes(cfg.boxId);
+  resetOtpGuard(prefix);
+  startOtpCountdown(prefix);
+}
+
+function resetOtpGuard(prefix){
+  const cfg = OTP_CONFIG[prefix];
+  state.otpAttempts[prefix] = 0;
+  state.otpLocked[prefix] = false;
+  state.otpExpired[prefix] = false;
+  document.querySelectorAll('#'+cfg.boxId+' input').forEach(i=>i.disabled=false);
+  document.getElementById(cfg.btnId).disabled = false;
+  document.getElementById(cfg.errorId).style.display='none';
+}
+
+function startOtpCountdown(prefix){
+  const cfg = OTP_CONFIG[prefix];
+  if(state.otpTimers[prefix]) clearInterval(state.otpTimers[prefix]);
+  let remaining = OTP_TTL_SECONDS;
+  const label = document.getElementById(cfg.timerId);
+  function tick(){
+    if(remaining<=0){
+      clearInterval(state.otpTimers[prefix]);
+      state.otpExpired[prefix] = true;
+      if(label) label.textContent = 'Code expired — resend a new one.';
+      return;
+    }
+    const m = Math.floor(remaining/60), s = remaining%60;
+    if(label) label.textContent = `Code expires in ${m}:${s.toString().padStart(2,'0')}`;
+    remaining--;
+  }
+  tick();
+  state.otpTimers[prefix] = setInterval(tick,1000);
+}
+
+function handleOtpVerify(prefix, onSuccess){
+  const cfg = OTP_CONFIG[prefix];
+  if(state.otpLocked[prefix]){ showToast('Too many attempts — please wait before retrying.'); return; }
+  if(state.otpExpired[prefix]){
+    const err = document.getElementById(cfg.errorId);
+    err.textContent = 'This code has expired. Tap resend to get a new one.';
+    err.style.display = 'block';
+    return;
+  }
+  const entered = readOtpBoxes(cfg.boxId);
+  if(entered === state.otp){
+    document.getElementById(cfg.errorId).style.display='none';
+    state.otpAttempts[prefix] = 0;
+    onSuccess();
+  } else {
+    state.otpAttempts[prefix] = (state.otpAttempts[prefix]||0) + 1;
+    const box = document.getElementById(cfg.boxId);
+    box.classList.add('shake');
+    setTimeout(()=>box.classList.remove('shake'),400);
+    if(state.otpAttempts[prefix] >= MAX_OTP_ATTEMPTS){
+      lockOtp(prefix);
+    } else {
+      const err = document.getElementById(cfg.errorId);
+      err.textContent = `That code didn't match. ${MAX_OTP_ATTEMPTS - state.otpAttempts[prefix]} attempt(s) left.`;
+      err.style.display = 'block';
+    }
+  }
+}
+
+function lockOtp(prefix){
+  const cfg = OTP_CONFIG[prefix];
+  state.otpLocked[prefix] = true;
+  document.querySelectorAll('#'+cfg.boxId+' input').forEach(i=>i.disabled=true);
+  document.getElementById(cfg.btnId).disabled = true;
+  const err = document.getElementById(cfg.errorId);
+  let cooldown = OTP_LOCK_SECONDS;
+  err.textContent = `Too many incorrect attempts. Try again in ${cooldown}s.`;
+  err.style.display = 'block';
+  const iv = setInterval(()=>{
+    cooldown--;
+    if(cooldown<=0){
+      clearInterval(iv);
+      state.otpLocked[prefix] = false;
+      state.otpAttempts[prefix] = 0;
+      document.querySelectorAll('#'+cfg.boxId+' input').forEach(i=>i.disabled=false);
+      document.getElementById(cfg.btnId).disabled = false;
+      err.style.display = 'none';
+      clearOtpBoxes(cfg.boxId);
+    } else {
+      err.textContent = `Too many incorrect attempts. Try again in ${cooldown}s.`;
+    }
+  },1000);
+}
+
+function verifyOtp(){
+  handleOtpVerify('otp', ()=>{
+    showToast('Contact verified ✓');
+    if(state.isLoginFlow){
+      loadDemoAccount();
+    } else {
+      showView('kyc');
+    }
+  });
+}
+function resendOtp(){
+  startOtp('otp', null);
+  showToast('New code sent to '+state.contact);
+}
+
+/* ===================== KYC ===================== */
+function markKycFile(kind, input){
+  if(input.files.length){
+    const cap = kind==='front' ? 'Front' : 'Selfie';
+    document.getElementById('dz'+cap).classList.add('filled');
+    document.getElementById('dz'+cap+'Text').textContent = '✓ '+input.files[0].name;
+    state.kyc[kind+'File'] = true;
+  }
+}
+function submitKyc(){
+  const idNumber = document.getElementById('idNumber').value.trim();
+  if(!idNumber || !state.kyc.frontFile || !state.kyc.selfieFile){
+    document.getElementById('kycError').style.display='block';
+    return;
+  }
+  document.getElementById('kycError').style.display='none';
+  state.kycStatus = 'pending';
+  const banner = document.getElementById('kycStatusBanner');
+  banner.className = 'kyc-status pending';
+  document.getElementById('kycStatusText').textContent = 'Under review — this usually takes a moment.';
+  document.getElementById('kycSubmitBtn').disabled = true;
+  document.getElementById('kycSubmitBtn').textContent = 'Reviewing…';
+
+  setTimeout(()=>{
+    state.kycStatus = 'verified';
+    banner.className = 'kyc-status verified';
+    document.getElementById('kycStatusText').textContent = 'Verified — your daily sending limit has been raised.';
+    document.getElementById('kycSubmitBtn').style.display = 'none';
+    document.getElementById('kycContinueBtn').style.display = 'flex';
+    showToast('Identity verified ✓');
+  }, 1800);
+}
+function skipKyc(){
+  showView('card');
+}
+
+/* ===================== CARD LINKING ===================== */
+function formatCardNumber(el){
+  let v = el.value.replace(/\D/g,'').slice(0,16);
+  el.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExpiry(el){
+  let v = el.value.replace(/\D/g,'').slice(0,4);
+  if(v.length>=3) v = v.slice(0,2)+'/'+v.slice(2);
+  el.value = v;
+}
+function submitCard(){
+  const name = document.getElementById('cardName').value.trim();
+  const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+  const exp = document.getElementById('cardExp').value.trim();
+  const cvv = document.getElementById('cardCvv').value.trim();
+  if(!name || num.length<15 || !/^\d{2}\/\d{2}$/.test(exp) || cvv.length<3){
+    document.getElementById('cardError').style.display='block';
+    return;
+  }
+  document.getElementById('cardError').style.display='none';
+  state.cards.push({ name, last4: num.slice(-4), exp });
+  showToast('Card linked ✓');
+  goToDashboard();
+}
+function showCardAdd(){
+  showView('card');
+}
+
+/* ===================== DASHBOARD ===================== */
+function goToDashboard(){
+  document.getElementById('dashName').textContent = state.name || 'there';
+  document.getElementById('dashAvatarInitial').textContent = (state.name||'X').trim()[0]?.toUpperCase() || 'X';
+  document.getElementById('dashBalance').textContent = state.balance.toFixed(2)+' '+state.homeCurrency;
+
+  const wallet = document.getElementById('walletStrip');
+  wallet.innerHTML = Object.keys(rates).slice(0,5).map(c=>{
+    const val = (state.balance/rates[state.homeCurrency]*rates[c]);
+    return `<div class="wallet-chip">${c} ${val.toFixed(2)}</div>`;
+  }).join('');
+
+  renderCards();
+  renderTx();
+  renderRiskPanel();
+  renderSessions();
+  renderOrders();
+  calcSend();
+  showView('dashboard');
+
+  state.loggedIn = true;
+  state.lastActivity = Date.now();
+  state.idleWarned = false;
+  updateBioUI();
+
+  if(!state.sendLockStarted){
+    startRateLock('sendLockChip',60);
+    state.sendLockStarted = true;
+  }
+}
+
+function renderSessions(){
+  const list = document.getElementById('sessionList');
+  if(!list) return;
+  list.innerHTML = state.sessions.map((s,i)=>{
+    if(s.revoked){
+      return `<div class="session-item"><div class="session-meta">Session revoked.</div></div>`;
+    }
+    const tag = s.current ? `<span class="session-tag">This device</span>` : (s.flagged ? `<span class="session-tag flag">Unrecognized</span>` : '');
+    const actions = s.current ? '' : `
+      <div class="session-actions">
+        <button onclick="reportSession(${i}, true)">This was me</button>
+        <button class="danger" onclick="reportSession(${i}, false)">This wasn't me</button>
+      </div>`;
+    return `
+      <div class="session-item">
+        <div class="session-top">
+          <div>
+            <div class="session-device">${s.device}</div>
+            <div class="session-meta">${s.location} • ${s.time}</div>
+          </div>
+          ${tag}
+        </div>
+        ${actions}
+      </div>`;
+  }).join('');
+}
+
+function reportSession(i, wasMe){
+  const s = state.sessions[i];
+  if(wasMe){
+    s.flagged = false;
+    renderSessions();
+    showToast('Thanks — marked as recognized');
+    return;
+  }
+  requestStepUp(
+    ()=>{
+      state.sessions[i].revoked = true;
+      renderSessions();
+      showToast('Session revoked and account secured ✓');
+    },
+    ()=>{},
+    "Confirm you want to revoke this session and secure your account."
+  );
+}
+
+/* ===================== ESCROW PAYMENTS & PURCHASE PROTECTION ===================== */
+function submitEscrowPayment(){
+  const seller = document.getElementById('orderSeller').value.trim();
+  const desc = document.getElementById('orderDesc').value.trim();
+  const category = document.getElementById('orderCategory').value;
+  const amt = parseFloat(document.getElementById('orderAmount').value || 0);
+  const errEl = document.getElementById('orderError');
+
+  if(!seller || !desc || !amt || amt<=0){
+    errEl.textContent = 'Fill in the seller, description, and amount.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(amt > state.balance){
+    errEl.textContent = 'Amount exceeds your available balance.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const amtUSD = amt / rates[state.homeCurrency];
+  const limitUSD = state.kycStatus==='verified' ? VERIFIED_LIMIT_USD : UNVERIFIED_LIMIT_USD;
+  if(state.dailySentUSD + amtUSD > limitUSD){
+    errEl.textContent = `This exceeds your daily sending limit of $${limitUSD}.`;
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const orderData = { seller, desc, category, amt, amtUSD };
+  const requireOtp = document.getElementById('otpEveryTx').checked;
+  if(requireOtp){
+    requestStepUp(
+      ()=>completeEscrowPayment(orderData),
+      ()=>{},
+      `Confirm paying ${amt.toFixed(2)} ${state.homeCurrency} to ${seller} — held in escrow until you confirm delivery.`
+    );
+  } else {
+    completeEscrowPayment(orderData);
+  }
+}
+
+function completeEscrowPayment({ seller, desc, category, amt, amtUSD }){
+  state.balance -= amt;
+  state.dailySentUSD += amtUSD;
+  state.orderCounter++;
+  const now = Date.now();
+  state.orders.unshift({
+    id: state.orderCounter,
+    seller, desc, category, amt, amtUSD,
+    status: 'escrow',
+    createdAt: now,
+    autoReleaseAt: now + ESCROW_DAYS*24*60*60*1000,
+  });
+  document.getElementById('orderSeller').value = '';
+  document.getElementById('orderDesc').value = '';
+  document.getElementById('orderAmount').value = '';
+  showToast(`Payment held in escrow — releases to ${seller} once you confirm, or automatically in ${ESCROW_DAYS} days.`);
+  goToDashboard();
+}
+
+function confirmReceipt(id){
+  const o = state.orders.find(x=>x.id===id);
+  if(!o) return;
+  o.status = 'released';
+  renderOrders();
+  showToast(`Payment released to ${o.seller} ✓`);
+}
+
+function openDispute(id){
+  const o = state.orders.find(x=>x.id===id);
+  if(!o) return;
+  state.currentDisputeOrderId = id;
+  document.getElementById('disputeContext').textContent = `${o.desc} — ${o.amt.toFixed(2)} ${state.homeCurrency} to ${o.seller}`;
+  document.getElementById('disputeReason').value = 'Not delivered';
+  document.getElementById('disputeNote').value = '';
+  document.getElementById('disputeError').style.display = 'none';
+  document.getElementById('dzEvidence').classList.remove('filled');
+  document.getElementById('dzEvidenceText').textContent = '📎 Attach a photo, screenshot, or tracking info';
+  state.disputeEvidence = false;
+  showView('dispute');
+}
+
+function markDisputeEvidence(input){
+  if(input.files.length){
+    document.getElementById('dzEvidence').classList.add('filled');
+    document.getElementById('dzEvidenceText').textContent = '✓ '+input.files[0].name;
+    state.disputeEvidence = true;
+  }
+}
+
+function cancelDispute(){
+  showView('dashboard');
+}
+
+function submitDispute(){
+  const note = document.getElementById('disputeNote').value.trim();
+  if(!note){
+    document.getElementById('disputeError').textContent = 'Add a short description of what went wrong.';
+    document.getElementById('disputeError').style.display = 'block';
+    return;
+  }
+  document.getElementById('disputeError').style.display = 'none';
+
+  const o = state.orders.find(x=>x.id===state.currentDisputeOrderId);
+  if(!o){ showView('dashboard'); return; }
+  const reason = document.getElementById('disputeReason').value;
+  o.disputeReason = reason;
+  o.disputeNote = note;
+
+  if(o.amtUSD <= SMALL_DISPUTE_AUTO_APPROVE_USD){
+    o.status = 'refunded';
+    refundOrder(o, 'Auto-approved');
+    showView('dashboard');
+    goToDashboard();
+    showToast('Refund auto-approved and credited ✓');
+  } else {
+    o.status = 'disputed';
+    renderOrders();
+    showView('dashboard');
+    goToDashboard();
+    showToast('Dispute submitted — under review by our support team.');
+    setTimeout(()=>{
+      o.status = 'refunded';
+      refundOrder(o, 'Reviewed & approved');
+      renderOrders();
+      renderTx();
+      document.getElementById('dashBalance').textContent = state.balance.toFixed(2)+' '+state.homeCurrency;
+      showToast(`Dispute resolved — refund credited for "${o.desc}" ✓`);
+    }, 5000);
+  }
+}
+
+function refundOrder(o, statusLabel){
+  state.balance += o.amt;
+  state.txCounter++;
+  state.transactions.unshift({
+    id: state.txCounter,
+    name: `Refund — ${o.seller}`,
+    meta: `${o.disputeReason} • ${statusLabel}`,
+    amt: o.amt,
+    dir: 'pos',
+  });
+  renderTx();
+}
+
+function simulateAutoRelease(id){
+  const o = state.orders.find(x=>x.id===id);
+  if(!o) return;
+  o.status = 'released';
+  renderOrders();
+  showToast('(Demo) Auto-release triggered — payment released to seller ✓');
+}
+
+function renderOrders(){
+  const list = document.getElementById('orderList');
+  if(!list) return;
+  if(state.orders.length===0){
+    list.innerHTML = `<p style="font-size:13px;color:var(--ash);">No purchases yet.</p>`;
+    return;
+  }
+  list.innerHTML = state.orders.map(o=>{
+    const releaseDate = new Date(o.autoReleaseAt).toLocaleDateString();
+    let pill, extra;
+    if(o.status==='escrow'){
+      pill = `<span class="order-pill escrow">Held in escrow</span>`;
+      extra = `
+        <div class="session-actions">
+          <button onclick="confirmReceipt(${o.id})">Confirm receipt &amp; release</button>
+          <button class="danger" onclick="openDispute(${o.id})">Report a problem</button>
+          <button onclick="simulateAutoRelease(${o.id})" style="color:var(--ash);">(Demo) skip to auto-release</button>
+        </div>
+        <div class="session-meta" style="margin-top:4px;">Auto-releases to seller on ${releaseDate} if you don't act.</div>`;
+    } else if(o.status==='disputed'){
+      pill = `<span class="order-pill disputed">Dispute under review</span>`;
+      extra = `<div class="session-meta">We're reviewing your claim — you'll be notified once it's resolved.</div>`;
+    } else if(o.status==='refunded'){
+      pill = `<span class="order-pill refunded">Refunded</span>`;
+      extra = `<div class="session-meta">${o.disputeReason || ''}${o.disputeNote ? ' — '+o.disputeNote : ''}</div>`;
+    } else {
+      pill = `<span class="order-pill released">Released to seller</span>`;
+      extra = '';
+    }
+    return `
+      <div class="session-item">
+        <div class="session-top">
+          <div>
+            <div class="session-device">${o.desc}</div>
+            <div class="session-meta">${o.seller} • ${o.category} • ${o.amt.toFixed(2)} ${state.homeCurrency}</div>
+          </div>
+          ${pill}
+        </div>
+        ${extra}
+      </div>`;
+  }).join('');
+}
+
+function renderRiskPanel(){
+  const pill = document.getElementById('kycPill');
+  pill.className = 'kyc-pill '+state.kycStatus;
+  pill.textContent = state.kycStatus==='verified' ? 'Verified' : state.kycStatus==='pending' ? 'Pending review' : 'Unverified';
+
+  const limitUSD = state.kycStatus==='verified' ? VERIFIED_LIMIT_USD : UNVERIFIED_LIMIT_USD;
+  const pct = Math.min(100, (state.dailySentUSD/limitUSD)*100);
+  document.getElementById('limitBarFill').style.width = pct+'%';
+  document.getElementById('limitText').textContent = `$${state.dailySentUSD.toFixed(0)} of $${limitUSD.toFixed(0)} used today`;
+  document.getElementById('verifyLink').style.display = state.kycStatus==='verified' ? 'none' : 'inline-block';
+}
+
+function renderCards(){
+  const list = document.getElementById('cardList');
+  if(state.cards.length===0){
+    list.innerHTML = `<p style="font-size:13px;color:var(--ash);margin-bottom:14px;">No cards linked yet.</p>`;
+    return;
+  }
+  list.innerHTML = state.cards.map((c,i)=>`
+    <div class="card-mini">
+      <button class="remove-card" onclick="removeCard(${i})">Remove</button>
+      <div style="font-size:11px;color:var(--mist);">${c.name}</div>
+      <div class="num">•••• •••• •••• ${c.last4}</div>
+      <div class="meta"><span>Expires ${c.exp}</span><span>Linked</span></div>
+    </div>
+  `).join('');
+}
+function removeCard(i){
+  requestStepUp(
+    ()=>{
+      state.cards.splice(i,1);
+      renderCards();
+      showToast('Card removed');
+    },
+    ()=>{},
+    'Confirm removing this linked card.'
+  );
+}
+
+function renderTx(){
+  const list = document.getElementById('txList');
+  list.innerHTML = state.transactions.map(t=>`
+    <div class="tx-item ${t.flagged?'flagged':''}">
+      <div><div class="tx-name">${t.name}</div><div class="tx-meta">${t.meta}</div></div>
+      <div class="tx-amt ${t.dir}">${t.amt>0?'+':''}${t.amt.toFixed(2)} ${state.homeCurrency}</div>
+    </div>
+  `).join('');
+}
+
+/* ===================== PAYOUT METHOD ===================== */
+function setPayoutMethod(method){
+  state.payoutMethod = method;
+  document.querySelectorAll('#payoutTabs button').forEach((b,i)=>{
+    const map = ['wallet','bank','mobile'];
+    b.classList.toggle('active', map[i]===method);
+  });
+  document.getElementById('payoutFieldsWallet').style.display = method==='wallet' ? 'block':'none';
+  document.getElementById('payoutFieldsBank').style.display = method==='bank' ? 'block':'none';
+  document.getElementById('payoutFieldsMobile').style.display = method==='mobile' ? 'block':'none';
+}
+
+function getRecipientLabel(){
+  if(state.payoutMethod==='wallet') return document.getElementById('walletRecipient').value.trim();
+  if(state.payoutMethod==='bank') return document.getElementById('bankHolder').value.trim();
+  return document.getElementById('momoHolder').value.trim();
+}
+function validatePayoutFields(){
+  if(state.payoutMethod==='wallet'){
+    return !!document.getElementById('walletRecipient').value.trim();
+  }
+  if(state.payoutMethod==='bank'){
+    return document.getElementById('bankHolder').value.trim() &&
+           document.getElementById('bankName').value.trim() &&
+           document.getElementById('bankAccount').value.trim();
+  }
+  return document.getElementById('momoHolder').value.trim() &&
+         document.getElementById('momoPhone').value.trim();
+}
+function payoutMetaLabel(){
+  if(state.payoutMethod==='wallet') return 'Xborder wallet';
+  if(state.payoutMethod==='bank') return 'Bank • '+(document.getElementById('bankName').value.trim()||'—');
+  return document.getElementById('momoProvider').value;
+}
+
+/* ===================== SEND MONEY ===================== */
+function calcSend(){
+  const amt = parseFloat(document.getElementById('sendAmount').value||0);
+  const toCur = document.getElementById('sendCurrency').value;
+  const rate = rates[toCur]/rates[state.homeCurrency];
+  document.getElementById('sendResult').value = (amt*rate).toFixed(2)+' '+toCur;
+}
+
+function requestSend(){
+  const amt = parseFloat(document.getElementById('sendAmount').value||0);
+  const toCur = document.getElementById('sendCurrency').value;
+
+  if(!amt || amt<=0){ document.getElementById('sendError').textContent='Enter an amount to send.'; document.getElementById('sendError').style.display='block'; return; }
+  if(!validatePayoutFields()){ document.getElementById('sendError').textContent='Fill in the recipient details to continue.'; document.getElementById('sendError').style.display='block'; return; }
+  if(amt > state.balance){ document.getElementById('sendError').textContent='Amount exceeds your available balance.'; document.getElementById('sendError').style.display='block'; return; }
+
+  const amtUSD = amt / rates[state.homeCurrency];
+  const limitUSD = state.kycStatus==='verified' ? VERIFIED_LIMIT_USD : UNVERIFIED_LIMIT_USD;
+  if(state.dailySentUSD + amtUSD > limitUSD){
+    document.getElementById('sendError').textContent = state.kycStatus==='verified'
+      ? `This exceeds your daily limit of $${limitUSD}. Try a smaller amount or send again tomorrow.`
+      : `This exceeds your unverified daily limit of $${limitUSD}. Verify your identity to raise it to $${VERIFIED_LIMIT_USD}.`;
+    document.getElementById('sendError').style.display='block';
+    return;
+  }
+  document.getElementById('sendError').style.display='none';
+
+  state.pendingSend = { amt, amtUSD, recipient: getRecipientLabel(), toCur, meta: payoutMetaLabel() };
+
+  const requireOtp = document.getElementById('otpEveryTx').checked;
+  if(requireOtp){
+    startOtp('sendOtp', `Confirm sending ${amt.toFixed(2)} ${state.homeCurrency} to ${state.pendingSend.recipient}.`);
+    showView('send-otp');
+  } else {
+    completeSend();
+  }
+}
+
+function verifySendOtp(){
+  handleOtpVerify('sendOtp', completeSend);
+}
+function resendSendOtp(){
+  startOtp('sendOtp', null);
+  showToast('New code sent to '+state.contact);
+}
+
+function completeSend(){
+  const { amt, amtUSD, recipient, toCur, meta } = state.pendingSend;
+  state.balance -= amt;
+  state.dailySentUSD += amtUSD;
+
+  const flag = document.getElementById('largeAmountReview').checked && amtUSD > FLAG_THRESHOLD_USD;
+  state.txCounter++;
+  const txId = state.txCounter;
+  const tx = {
+    id: txId,
+    name: recipient,
+    meta: flag ? `${meta} • Under review` : `${meta} • ${toCur} • just now`,
+    amt: -amt,
+    dir: 'neg',
+    flagged: flag,
+  };
+  state.transactions.unshift(tx);
+  renderTx();
+  renderRiskPanel();
+
+  document.getElementById('walletRecipient').value='';
+  document.getElementById('bankHolder').value=''; document.getElementById('bankName').value=''; document.getElementById('bankAccount').value=''; document.getElementById('bankSwift').value='';
+  document.getElementById('momoHolder').value=''; document.getElementById('momoPhone').value='';
+
+  if(flag){
+    showToast(`Sent — flagged for manual review (large amount) ⏳`);
+    setTimeout(()=>{
+      const t = state.transactions.find(x=>x.id===txId);
+      if(t){
+        t.flagged = false;
+        t.meta = t.meta.replace('Under review','Cleared');
+        renderTx();
+        showToast(`Transfer to ${recipient} cleared review ✓`);
+      }
+    }, 4000);
+  } else {
+    showToast(`Sent ${amt.toFixed(2)} ${state.homeCurrency} to ${recipient} ✓`);
+  }
+  goToDashboard();
+}
+
+/* ===================== GUARDED SECURITY TOGGLES ===================== */
+// Turning a protection ON is applied immediately. Turning one OFF weakens
+// security, so it's held pending a fresh OTP before it actually takes effect.
+function guardToggleOff(checkbox, label){
+  if(checkbox.checked){
+    showToast(label+' enabled');
+    return;
+  }
+  checkbox.checked = true; // hold the protection on until confirmed
+  requestStepUp(
+    ()=>{ checkbox.checked = false; showToast(label+' disabled'); },
+    ()=>{ checkbox.checked = true; },
+    `Confirm turning off "${label}".`
+  );
+}
+
+/* ===================== STEP-UP RE-AUTHENTICATION ===================== */
+function requestStepUp(onSuccess, onCancel, message){
+  state.stepUpAction = onSuccess;
+  state.stepUpRevert = onCancel;
+  startOtp('stepUp', message);
+  showView('stepup-otp');
+}
+function verifyStepUpOtp(){
+  handleOtpVerify('stepUp', ()=>{
+    showView('dashboard');
+    if(state.stepUpAction) state.stepUpAction();
+    state.stepUpAction = null;
+    state.stepUpRevert = null;
+  });
+}
+function resendStepUpOtp(){
+  startOtp('stepUp', null);
+  showToast('New code sent to '+state.contact);
+}
+function cancelStepUp(){
+  if(state.stepUpRevert) state.stepUpRevert();
+  state.stepUpAction = null;
+  state.stepUpRevert = null;
+  showView('dashboard');
+}
+</script>
+</body>
+</html>
